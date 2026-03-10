@@ -1,7 +1,7 @@
 {
-  "name": "宿命の鏡",
-  "short_name": "宿命の鏡",
-  "description": "東西の占術を融合した神秘の占いアプリ",
+  "name": "スターダストフォーチュン",
+  "short_name": "スターダスト",
+  "description": "星と運命の占いアプリ — Stardust Fortune",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#040408",

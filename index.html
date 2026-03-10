@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>宿命の鏡 — 究極占術</title>
+<title>スターダストフォーチュン</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Serif+JP:wght@200;300;400&family=Noto+Serif+SC:wght@200;300&family=Noto+Serif+KR:wght@200;300&display=swap" rel="stylesheet">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#040408">
@@ -112,6 +112,13 @@
   input:focus, select:focus, textarea:focus { border-color:rgba(201,168,76,0.5); background:rgba(201,168,76,0.04); box-shadow:0 0 20px rgba(201,168,76,0.08); }
 
   .fortune-types { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:28px; }
+  .provider-btn {
+    padding:8px 18px; background:transparent;
+    border:1px solid rgba(201,168,76,0.2); border-radius:1px; color:var(--text-dim);
+    font-family:inherit; font-size:0.8rem; cursor:pointer; transition:all .3s; letter-spacing:0.08em;
+  }
+  .provider-btn:hover { border-color:var(--gold-dim); color:var(--text); }
+  .provider-btn.active { border-color:var(--gold); color:var(--gold); background:rgba(201,168,76,0.08); }
   .type-btn {
     flex:1; min-width:110px; padding:10px 12px; background:transparent;
     border:1px solid rgba(201,168,76,0.2); border-radius:1px; color:var(--text-dim);
@@ -187,8 +194,8 @@
         <line x1="70" y1="40" x2="78" y2="40" stroke="#c9a84c" stroke-width="0.5" opacity="0.5"/>
       </svg>
     </div>
-    <h1 id="appTitle">宿命の鏡</h1>
-    <p class="subtitle" id="appSubtitle">The Mirror of Fate · 究極占術</p>
+    <h1 id="appTitle">スターダストフォーチュン</h1>
+    <p class="subtitle" id="appSubtitle">Stardust Fortune · 星と運命の占い</p>
   </header>
 
   <div class="divider"><span>✦</span></div>
@@ -197,10 +204,18 @@
     <div class="corner tl"></div><div class="corner tr"></div>
     <div class="corner bl"></div><div class="corner br"></div>
 
-    <!-- API Key input -->
+    <!-- API Provider & Key -->
     <div class="apikey-wrap" id="apikeyWrap">
+      <div class="field" style="margin-bottom:16px">
+        <label id="lApiProvider" style="display:block;margin-bottom:10px">AI プロバイダー</label>
+        <div style="display:flex;gap:8px;flex-wrap:nowrap">
+          <button class="provider-btn active" data-provider="gemini" onclick="selectProvider('gemini')" style="flex:1">✦ Gemini</button>
+          <button class="provider-btn" data-provider="claude" onclick="selectProvider('claude')" style="flex:1">◈ Claude</button>
+          <button class="provider-btn" data-provider="openai" onclick="selectProvider('openai')" style="flex:1">⬡ OpenAI</button>
+        </div>
+      </div>
       <div class="field" style="margin-bottom:24px">
-        <label id="lApiKey">Gemini APIキー</label>
+        <label id="lApiKey">APIキー</label>
         <div style="display:flex;gap:8px;align-items:center">
           <input type="password" id="apiKey" placeholder="AIza..." style="flex:1">
           <button onclick="toggleApiKeyVisibility()" id="toggleBtn" style="padding:10px 14px;background:transparent;border:1px solid rgba(201,168,76,0.2);color:var(--text-dim);font-size:0.75rem;cursor:pointer;white-space:nowrap;transition:all .3s" onmouseover="this.style.borderColor='rgba(201,168,76,0.5)'" onmouseout="this.style.borderColor='rgba(201,168,76,0.2)'">表示</button>
@@ -262,14 +277,14 @@
 // ══════════════════════════════════════════
 const I18N = {
   ja: {
-    lang:'ja', appTitle:'宿命の鏡', appSubtitle:'The Mirror of Fate · 究極占術',
+    lang:'ja', appTitle:'スターダストフォーチュン', appSubtitle:'Stardust Fortune · 星と運命の占い',
     lName:'お名前', lLastName:'姓', lFirstName:'名', lBirth:'生年月日', lTime:'出生時刻（任意）', lGender:'性別',
     lQuestion:'今の悩み・聞きたいこと（任意）', lTypeSelect:'占術を選択',
     namePH:'例：山田 花子', lastNamePH:'例：山田', firstNamePH:'例：花子', questionPH:'例：仕事のこと、恋愛のこと、今後の人生について…',
     gOpt0:'選択してください', gOpt1:'女性', gOpt2:'男性', gOpt3:'その他',
     t_general:'総合鑑定', t_today:'今日の運勢', t_week:'今週の運勢', t_month:'今月の運勢', t_year:'今年の運勢',
     invokeBtn:'天命を読み解く', loadingText:'天の理を読み解いています…',
-    resetBtn:'▸ 新たな問いを立てる', footerText:'宿命の鏡 · 究極占術<br>占いは参考程度にお楽しみください',
+    resetBtn:'▸ 新たな問いを立てる', footerText:'スターダストフォーチュン<br>占いは参考程度にお楽しみください',
     errName:'お名前をご入力ください', errBirth:'生年月日をご入力ください',
     errAPI:'天の声を受信できませんでした。しばらくしてから再度お試しください。',
     errApiKey:'Gemini APIキーを入力してください',
@@ -283,7 +298,7 @@ const I18N = {
     buildUser(d){ const gl={female:'女性',male:'男性',other:'その他','':'未回答'}; const today=d.today; const s=d.seimei; const seimeiText=s?`\n姓名判断：\n　天格（姓・${s.lastStrokes}画）：${s.tenkakuKikyo}　地格（名・${s.firstStrokes}画）：${s.chikakuKikyo}\n　人格（${s.jinkaku}画）：${s.jinkakuKikyo}　外格（${s.gaikaku}画）：${s.gaikakuKikyo}　総格（${s.sokaku}画）：${s.sokakuKikyo}`:''; const instr={general:'四柱推命・九星気学・数秘術・星座占い・姓名判断を統合した総合鑑定をお願いします。この方の本質的な使命、性格、才能、今後の人生における指針を詳しく示してください。姓名判断の結果も必ず読み解いてください。',today:`本日（${today}）の運勢を鑑定してください。姓名判断の結果も踏まえ、恋愛・仕事・健康・金運の観点から、今日一日の流れと心がけるべきことをお伝えください。`,week:'今週（7日間）の運勢を鑑定してください。姓名判断の結果も踏まえ、週の前半・後半の流れ、チャンスが訪れる日、注意すべき日、恋愛・仕事・健康の運勢をお伝えください。',month:'今月の運勢を鑑定してください。姓名判断の結果も踏まえ、月全体の大きな流れ、重要な転機となる時期、恋愛・仕事・健康・金運の運勢をお伝えください。',year:'今年の運勢を鑑定してください。姓名判断の結果も踏まえ、年間を通じた大きな流れ、特に重要な時期、恋愛・仕事・健康・金運の年間運勢と、今年の指針をお伝えください。'}; return `以下の方の鑑定をお願いします。\n\n【鑑定対象】\nお名前：${d.name}${seimeiText}\n生年月日：${d.bd}（${d.year}年）\n出生時刻：${d.bt||'不明'}\n性別：${gl[d.gender]||'未回答'}\n星座：${d.zodiac}\n九星気学：${d.kyusei}\n四柱（年柱）：${d.shichu}\nライフパスナンバー：${d.lp}\n${d.q?'ご相談内容：'+d.q:''}\n\n${instr[d.type]}`; }
   },
   en: {
-    lang:'en', appTitle:'Mirror of Fate', appSubtitle:'Ancient Wisdom · Ultimate Oracle',
+    lang:'en', appTitle:'Stardust Fortune', appSubtitle:'Stars & Destiny · Ultimate Oracle',
     lName:'Your Name', lLastName:'Last Name', lFirstName:'First Name', lBirth:'Date of Birth', lTime:'Birth Time (optional)', lGender:'Gender',
     lQuestion:'Your Question (optional)', lTypeSelect:'Choose Divination',
     namePH:'e.g. Jane Smith', lastNamePH:'e.g. Smith', firstNamePH:'e.g. Jane', questionPH:'e.g. Love, career, life path…',
@@ -304,7 +319,7 @@ const I18N = {
     buildUser(d){ const gl={female:'Female',male:'Male',other:'Other','':'Unspecified'}; const today=d.today; const s=d.seimei; const seimeiText=s?`\nName Numerology (Seimei):\n  Heaven (${s.lastStrokes} strokes): ${s.tenkakuKikyo}  Earth (${s.firstStrokes} strokes): ${s.chikakuKikyo}\n  Human (${s.jinkaku}): ${s.jinkakuKikyo}  Outer (${s.gaikaku}): ${s.gaikakuKikyo}  Total (${s.sokaku}): ${s.sokakuKikyo}`:''; const instr={general:"Provide a holistic reading integrating all divination traditions including name numerology — reveal this person's core mission, character, talents, and life guidance.",today:`Read the fortune for today (${today}). Taking name numerology into account, cover love, work, health, and finances.`,week:"Read the fortune for this week. Taking name numerology into account, describe the weekly flow, lucky days, and guidance for love, work, and health.",month:"Read the fortune for this month. Taking name numerology into account, describe the overall flow, key turning points, and guidance for love, work, health, and finances.",year:"Read the fortune for this year. Taking name numerology into account, describe the annual flow, most important periods, and guidance for love, work, health, and finances."}; return `Please provide a reading for:\n\nName: ${d.name}${seimeiText}\nBirth Date: ${d.bd} (born ${d.year})\nBirth Time: ${d.bt||'Unknown'}\nGender: ${gl[d.gender]||'Unspecified'}\nZodiac: ${d.zodiac}\nKyusei Star: ${d.kyusei}\nYear Pillar: ${d.shichu}\nLife Path: ${d.lp}\n${d.q?'Question: '+d.q:''}\n\n${instr[d.type]}`; }
   },
   zh: {
-    lang:'zh', appTitle:'命运之镜', appSubtitle:'天命占術 · 东西方智慧的结晶',
+    lang:'zh', appTitle:'星尘命运', appSubtitle:'Stardust Fortune · 星与命运的占卜',
     lName:'姓名', lLastName:'姓', lFirstName:'名', lBirth:'出生日期', lTime:'出生时间（可选）', lGender:'性别',
     lQuestion:'您的问题（可选）', lTypeSelect:'选择占术',
     namePH:'例：张三', lastNamePH:'例：张', firstNamePH:'例：三', questionPH:'例：关于感情、事业、未来方向…',
@@ -325,7 +340,7 @@ const I18N = {
     buildUser(d){ const gl={female:'女性',male:'男性',other:'其他','':'未填写'}; const today=d.today; const s=d.seimei; const seimeiText=s?`\n姓名判断：\n　天格（姓・${s.lastStrokes}画）：${s.tenkakuKikyo}　地格（名・${s.firstStrokes}画）：${s.chikakuKikyo}\n　人格（${s.jinkaku}画）：${s.jinkakuKikyo}　外格（${s.gaikaku}画）：${s.gaikakuKikyo}　总格（${s.sokaku}画）：${s.sokakuKikyo}`:''; const instr={general:'综合四柱推命、九星气学、数秘术、星座占卜与姓名判断，揭示此人的核心使命、性格、才能与人生指引。请务必解读姓名判断结果。',today:`鉴定今日（${today}）的运势，结合姓名判断，涵盖感情、事业、健康、财运，说明今日的能量流向与注意事项。`,week:'鉴定本周运势，结合姓名判断，说明上半周与下半周的走势、吉日与需注意的日子，以及感情、事业、健康的运势。',month:'鉴定本月运势，结合姓名判断，说明整体走势、重要转折时机，以及感情、事业、健康、财运的月度运势。',year:'鉴定今年运势，结合姓名判断，说明全年大势、最重要的时期，以及感情、事业、健康、财运的年度运势与指引。'}; return `请为以下人士进行鉴定：\n\n姓名：${d.name}${seimeiText}\n出生日期：${d.bd}（${d.year}年）\n出生时间：${d.bt||'不详'}\n性别：${gl[d.gender]||'未填写'}\n星座：${d.zodiac}\n九星气学：${d.kyusei}\n年柱：${d.shichu}\n生命路径数：${d.lp}\n${d.q?'问题：'+d.q:''}\n\n${instr[d.type]}`; }
   },
   ko: {
-    lang:'ko', appTitle:'운명의 거울', appSubtitle:'천명 점술 · 동서양의 지혜',
+    lang:'ko', appTitle:'스타더스트 포춘', appSubtitle:'Stardust Fortune · 별과 운명의 점술',
     lName:'성명', lLastName:'성', lFirstName:'이름', lBirth:'생년월일', lTime:'출생 시각 (선택)', lGender:'성별',
     lQuestion:'질문 사항 (선택)', lTypeSelect:'점술 선택',
     namePH:'예: 김민지', lastNamePH:'예: 김', firstNamePH:'예: 민지', questionPH:'예: 사랑, 직업, 인생 방향에 대해…',
@@ -346,7 +361,7 @@ const I18N = {
     buildUser(d){ const gl={female:'여성',male:'남성',other:'기타','':'미입력'}; const today=d.today; const s=d.seimei; const seimeiText=s?`\n성명판단：\n　천격（성・${s.lastStrokes}획）：${s.tenkakuKikyo}　지격（이름・${s.firstStrokes}획）：${s.chikakuKikyo}\n　인격（${s.jinkaku}획）：${s.jinkakuKikyo}　외격（${s.gaikaku}획）：${s.gaikakuKikyo}　총격（${s.sokaku}획）：${s.sokakuKikyo}`:''; const instr={general:'사주추명, 구성기학, 수비술, 별자리 점, 성명판단을 통합하여 이 분의 핵심 사명, 성격, 재능과 인생 지침을 알려주세요. 성명판단 결과도 반드시 풀어주세요.',today:`오늘(${today})의 운세를 감정해 주세요. 성명판단 결과도 踏まえ, 사랑, 직업, 건강, 재물 운을 중심으로 오늘의 흐름과 주의사항을 알려주세요.`,week:'이번 주 운세를 감정해 주세요. 성명판단 결과도 踏まえ, 주 전반부와 후반부의 흐름, 길일과 주의해야 할 날, 사랑·직업·건강 운세를 알려주세요.',month:'이번 달 운세를 감정해 주세요. 성명판단 결과도 踏まえ, 전체적인 흐름, 중요한 전환점, 사랑·직업·건강·재물 운의 월별 운세를 알려주세요.',year:'올해 운세를 감정해 주세요. 성명판단 결과도 踏まえ, 연간 흐름, 가장 중요한 시기, 사랑·직업·건강·재물 운의 연간 운세와 지침을 알려주세요.'}; return `다음 분의 감정을 해주세요.\n\n이름: ${d.name}${seimeiText}\n생년월일: ${d.bd} (${d.year}년생)\n출생 시각: ${d.bt||'불명'}\n성별: ${gl[d.gender]||'미입력'}\n별자리: ${d.zodiac}\n구성기학: ${d.kyusei}\n사주(년주): ${d.shichu}\n라이프패스 넘버: ${d.lp}\n${d.q?'질문: '+d.q:''}\n\n${instr[d.type]}`; }
   },
   fr: {
-    lang:'fr', appTitle:'Miroir du Destin', appSubtitle:'Sagesse Ancestrale · Oracle Suprême',
+    lang:'fr', appTitle:'Stardust Fortune', appSubtitle:'Poussi\u00e8re d\u2019\u00c9toiles · Oracle Supr\u00eame',
     lName:'Votre Nom', lLastName:'Nom de famille', lFirstName:'Prénom', lBirth:'Date de Naissance', lTime:'Heure de Naissance (optionnel)', lGender:'Genre',
     lQuestion:'Votre Question (optionnel)', lTypeSelect:'Choisir la Divination',
     namePH:'ex : Marie Dupont', lastNamePH:'ex : Dupont', firstNamePH:'ex : Marie', questionPH:"ex : À propos de l'amour, carrière, avenir…",
@@ -417,6 +432,96 @@ function setLang(lang) {
   document.getElementById('apikeyNote').textContent = t.apikeyNote;
   document.getElementById('toggleBtn').textContent = t.toggleShow;
   document.title = t.appTitle;
+  updateProviderUI();
+}
+
+// ══════════════════════════════════════════
+// API Provider
+// ══════════════════════════════════════════
+let currentProvider = 'gemini';
+
+const PROVIDER_INFO = {
+  gemini: {
+    placeholder: 'AIza...',
+    notes: {
+      ja: 'Google AI Studio（aistudio.google.com）で無料取得。Gemini 2.0 Flash使用。1日1,500リクエスト無料。',
+      en: 'Get a free key at Google AI Studio (aistudio.google.com). Uses Gemini 2.0 Flash. 1,500 free requests/day.',
+      zh: '在 Google AI Studio（aistudio.google.com）免费获取。使用 Gemini 2.0 Flash。每日免费1,500次。',
+      ko: 'Google AI Studio(aistudio.google.com)에서 무료 발급. Gemini 2.0 Flash 사용. 하루 1,500회 무료.',
+      fr: 'Obtenez une clé gratuite sur Google AI Studio (aistudio.google.com). Utilise Gemini 2.0 Flash. 1 500 requêtes gratuites/jour.',
+    },
+    labels: { ja:'Gemini APIキー', en:'Gemini API Key', zh:'Gemini API 密钥', ko:'Gemini API 키', fr:'Clé API Gemini' },
+  },
+  claude: {
+    placeholder: 'sk-ant-...',
+    notes: {
+      ja: 'Anthropic Console（console.anthropic.com）で取得。Claude Haiku使用。新規登録で無料クレジットあり。',
+      en: 'Get your key at Anthropic Console (console.anthropic.com). Uses Claude Haiku. Free credits for new users.',
+      zh: '在 Anthropic Console（console.anthropic.com）获取。使用 Claude Haiku。新用户有免费额度。',
+      ko: 'Anthropic Console(console.anthropic.com)에서 발급. Claude Haiku 사용. 신규 가입 시 무료 크레딧 제공.',
+      fr: 'Obtenez votre clé sur Anthropic Console (console.anthropic.com). Utilise Claude Haiku. Crédits gratuits pour les nouveaux utilisateurs.',
+    },
+    labels: { ja:'Claude APIキー', en:'Claude API Key', zh:'Claude API 密钥', ko:'Claude API 키', fr:'Clé API Claude' },
+  },
+  openai: {
+    placeholder: 'sk-...',
+    notes: {
+      ja: 'OpenAI Platform（platform.openai.com）で取得。GPT-4o mini使用。新規登録で無料クレジットあり。',
+      en: 'Get your key at OpenAI Platform (platform.openai.com). Uses GPT-4o mini. Free credits for new users.',
+      zh: '在 OpenAI Platform（platform.openai.com）获取。使用 GPT-4o mini。新用户有免费额度。',
+      ko: 'OpenAI Platform(platform.openai.com)에서 발급. GPT-4o mini 사용. 신규 가입 시 무료 크레딧 제공.',
+      fr: 'Obtenez votre clé sur OpenAI Platform (platform.openai.com). Utilise GPT-4o mini. Crédits gratuits pour les nouveaux utilisateurs.',
+    },
+    labels: { ja:'OpenAI APIキー', en:'OpenAI API Key', zh:'OpenAI API 密钥', ko:'OpenAI API 키', fr:'Clé API OpenAI' },
+  }
+};
+
+// 各プロバイダーのキーをメモリに保持
+const savedKeys = { gemini: '', claude: '', openai: '' };
+
+function selectProvider(provider) {
+  // 現在のキーを保存
+  savedKeys[currentProvider] = document.getElementById('apiKey').value;
+  saveApiKeys();
+
+  currentProvider = provider;
+
+  // ボタンのactive更新
+  document.querySelectorAll('.provider-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.provider === provider);
+  });
+
+  // キー入力欄を切り替え
+  document.getElementById('apiKey').value = savedKeys[provider];
+  document.getElementById('apiKey').type = 'password';
+  document.getElementById('toggleBtn').textContent = I18N[currentLang].toggleShow;
+
+  updateProviderUI();
+}
+
+function updateProviderUI() {
+  const info = PROVIDER_INFO[currentProvider];
+  const lang = info.labels[currentLang] ? currentLang : 'en';
+  document.getElementById('lApiKey').textContent = info.labels[lang];
+  document.getElementById('apiKey').placeholder = info.placeholder;
+  document.getElementById('apikeyNote').textContent = info.notes[lang];
+}
+
+function saveApiKeys() {
+  savedKeys[currentProvider] = document.getElementById('apiKey').value;
+  try { localStorage.setItem('mikagami_apikeys', JSON.stringify(savedKeys)); } catch(e) {}
+}
+
+function loadApiKeys() {
+  try {
+    const raw = localStorage.getItem('mikagami_apikeys');
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.gemini) savedKeys.gemini = data.gemini;
+    if (data.claude) savedKeys.claude = data.claude;
+    if (data.openai) savedKeys.openai = data.openai;
+    document.getElementById('apiKey').value = savedKeys[currentProvider];
+  } catch(e) {}
 }
 
 // ══════════════════════════════════════════
@@ -546,7 +651,7 @@ async function invokeFortune() {
   if (!lastName && !firstName) { showError(t.errName); return; }
   if (!bd) { showError(t.errBirth); return; }
 
-  try { saveFormData(); } catch(e) { console.warn('saveFormData error:', e); }
+  try { saveFormData(); saveApiKeys(); } catch(e) { console.warn('save error:', e); }
 
   let seimei = null;
   try { seimei = getSeimei(lastName, firstName); } catch(e) { console.warn('getSeimei error:', e); }
@@ -563,23 +668,38 @@ async function invokeFortune() {
   const prompt = t.system + '\n\n' + t.buildUser(pdata);
 
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: 1200, temperature: 0.85 }
-        })
-      }
-    );
-    const data = await res.json();
-    if (!res.ok) {
-      const msg = data.error?.message || t.errAPI;
-      throw new Error(msg);
+    let text = '';
+
+    if (currentProvider === 'gemini') {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        { method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{maxOutputTokens:1200,temperature:0.85} }) }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || t.errAPI);
+      text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    } else if (currentProvider === 'claude') {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:1200, messages:[{role:'user',content:prompt}] })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || t.errAPI);
+      text = data.content?.[0]?.text || '';
+
+    } else if (currentProvider === 'openai') {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+        body: JSON.stringify({ model:'gpt-4o-mini', max_tokens:1200, temperature:0.85, messages:[{role:'user',content:prompt}] })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || t.errAPI);
+      text = data.choices?.[0]?.message?.content || '';
     }
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     document.getElementById('loadingVeil').className = 'loading-veil';
     document.getElementById('resultTypeIndicator').textContent = t.typeLabels[type];
@@ -912,6 +1032,7 @@ function loadFormData() {
 
 setLang('ja');
 loadFormData();
+loadApiKeys();
 
 // イベントリスナー（onclickより確実）
 document.addEventListener('DOMContentLoaded', function() {
