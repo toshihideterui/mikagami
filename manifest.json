@@ -1,0 +1,24 @@
+{
+  "name": "宿命の鏡",
+  "short_name": "宿命の鏡",
+  "description": "東西の占術を融合した神秘の占いアプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#040408",
+  "theme_color": "#040408",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
