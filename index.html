@@ -528,6 +528,7 @@ function getSeimei(lastName, firstName) {
 
 
 async function invokeFortune() {
+  try {
   const t = I18N[currentLang];
   const apiKey = document.getElementById('apiKey').value.trim();
   const lastName = document.getElementById('lastName').value.trim();
@@ -545,10 +546,15 @@ async function invokeFortune() {
   if (!lastName && !firstName) { showError(t.errName); return; }
   if (!bd) { showError(t.errBirth); return; }
 
-  saveFormData();
+  try { saveFormData(); } catch(e) { console.warn('saveFormData error:', e); }
 
-  const seimei = getSeimei(lastName, firstName);
-  const pdata = { name: name.trim(), lastName, firstName, seimei, bd, bt, gender, q, type, zodiac:getZodiac(bd), kyusei:getKyusei(bd), shichu:getShichu(bd), lp:getLifeNum(bd), year:new Date(bd).getFullYear(), today:new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'}) };
+  let seimei = null;
+  try { seimei = getSeimei(lastName, firstName); } catch(e) { console.warn('getSeimei error:', e); }
+
+  const pdata = { name: name.trim(), lastName, firstName, seimei, bd, bt, gender, q, type,
+    zodiac: getZodiac(bd), kyusei: getKyusei(bd), shichu: getShichu(bd),
+    lp: getLifeNum(bd), year: new Date(bd).getFullYear(),
+    today: new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'}) };
 
   document.getElementById('formSection').style.display = 'none';
   document.getElementById('loadingVeil').className = 'loading-veil show';
@@ -595,6 +601,13 @@ async function invokeFortune() {
       showError(t.errAPI + (msg ? '（' + msg.slice(0, 60) + '）' : ''));
     }
     console.error(err);
+  }
+  } catch(fatal) {
+    // 最外側のキャッチ：どこで止まっても必ず表示
+    document.getElementById('loadingVeil').className = 'loading-veil';
+    document.getElementById('formSection').style.display = 'block';
+    showError('エラーが発生しました：' + (fatal.message || fatal));
+    console.error('FATAL:', fatal);
   }
 }
 
