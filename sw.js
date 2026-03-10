@@ -1,16 +1,22 @@
-const CACHE_NAME = 'mikagami-v1';
-const urlsToCache = ['/'];
+const CACHE_NAME = 'mikagami-v3';
 
 self.addEventListener('install', event => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+    caches.keys().then(keys =>
+      Promise.all(keys.map(key => caches.delete(key)))
+    ).then(() => self.clients.claim())
   );
 });
 
+// ネットワーク優先：常に最新のファイルを取得
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
-    })
+    fetch(event.request).catch(() =>
+      caches.match(event.request)
+    )
   );
 });

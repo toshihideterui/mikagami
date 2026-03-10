@@ -233,7 +233,7 @@
       <button class="type-btn" data-type="month">🌕 <span class="tlbl" data-key="t_month"></span></button>
       <button class="type-btn" data-type="year">⭐ <span class="tlbl" data-key="t_year"></span></button>
     </div>
-    <button class="invoke-btn" id="invokeBtn" onclick="invokeFortune()"></button>
+    <button class="invoke-btn" id="invokeBtn"></button>
     <div class="error-msg" id="errorMsg"></div>
   </div>
 
@@ -584,7 +584,16 @@ async function invokeFortune() {
   } catch(err) {
     document.getElementById('loadingVeil').className = 'loading-veil';
     document.getElementById('formSection').style.display = 'block';
-    showError(err.message.includes('API_KEY') ? t.errApiKeyInvalid : t.errAPI);
+    const msg = err.message || '';
+    if (msg.includes('API_KEY') || msg.includes('API key')) {
+      showError(t.errApiKeyInvalid);
+    } else if (msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
+      showError('本日の無料利用上限に達しました。明日また試してください。');
+    } else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed')) {
+      showError('通信エラーが発生しました。接続を確認してください。');
+    } else {
+      showError(t.errAPI + (msg ? '（' + msg.slice(0, 60) + '）' : ''));
+    }
     console.error(err);
   }
 }
@@ -890,6 +899,28 @@ function loadFormData() {
 setLang('ja');
 loadFormData();
 
+// イベントリスナー（onclickより確実）
+document.addEventListener('DOMContentLoaded', function() {
+  const btn = document.getElementById('invokeBtn');
+  if (btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      invokeFortune();
+    });
+  }
+});
+
+// DOMContentLoadedが既に発火済みの場合も対応
+(function() {
+  const btn = document.getElementById('invokeBtn');
+  if (btn && !btn._bound) {
+    btn._bound = true;
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      invokeFortune();
+    });
+  }
+})();
 </script>
 </body>
 </html>
