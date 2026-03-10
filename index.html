@@ -216,8 +216,8 @@
       </div>
       <div class="field" style="margin-bottom:24px">
         <label id="lApiKey">APIキー</label>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input type="password" id="apiKey" placeholder="AIza..." style="flex:1">
+        <div style="display:flex;gap:8px;align-items:flex-start">
+          <textarea id="apiKey" rows="2" placeholder="AIza..." style="flex:1;resize:vertical;font-family:monospace;font-size:0.78rem;letter-spacing:0.02em;background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.15);border-radius:1px;color:var(--text);padding:10px 14px;outline:none;transition:border-color .3s;-webkit-text-security:disc" id="apiKey"></textarea>
           <button onclick="toggleApiKeyVisibility()" id="toggleBtn" style="padding:10px 14px;background:transparent;border:1px solid rgba(201,168,76,0.2);color:var(--text-dim);font-size:0.75rem;cursor:pointer;white-space:nowrap;transition:all .3s" onmouseover="this.style.borderColor='rgba(201,168,76,0.5)'" onmouseout="this.style.borderColor='rgba(201,168,76,0.2)'">表示</button>
         </div>
         <p id="apikeyNote" style="font-size:0.62rem;color:var(--text-dim);margin-top:6px;letter-spacing:0.05em;line-height:1.8"></p>
@@ -672,8 +672,19 @@ async function invokeFortune() {
     let text = '';
 
     if (currentProvider === 'gemini') {
-      // カンマ区切りで複数キーをパース
-      const geminiKeys = apiKey.split(',').map(k => k.trim()).filter(k => k.length > 0);
+      // カンマ区切りで複数キーをパース（全角カンマ・スペース・改行も対応）
+      const geminiKeys = apiKey
+        .replace(/，/g, ',')   // 全角カンマ対応
+        .split(/[,\n]/)
+        .map(k => k.trim())
+        .filter(k => k.length > 5);
+
+      // デバッグ：キー数をステータスに表示
+      const statusEl = document.getElementById('apikeyStatus');
+      if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.textContent = `🔍 ${geminiKeys.length}件のキーを検出 / 試行中...`;
+      }
       if (geminiKeys.length === 0) throw new Error('NO_KEY');
 
       let lastError = null;
@@ -785,11 +796,14 @@ function toggleApiKeyVisibility() {
   const input = document.getElementById('apiKey');
   const btn = document.getElementById('toggleBtn');
   const t = I18N[currentLang];
-  if (input.type === 'password') {
-    input.type = 'text';
+  const isHidden = input.style.webkitTextSecurity === 'disc' || input.style.webkitTextSecurity === '';
+  if (isHidden) {
+    input.style.webkitTextSecurity = 'none';
+    input.style.textSecurity = 'none';
     btn.textContent = t.toggleHide;
   } else {
-    input.type = 'password';
+    input.style.webkitTextSecurity = 'disc';
+    input.style.textSecurity = 'disc';
     btn.textContent = t.toggleShow;
   }
 }
