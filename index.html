@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>スターダストフォーチュン</title>
+<title>Fate Layer</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Serif+JP:wght@200;300;400&family=Noto+Serif+SC:wght@200;300&family=Noto+Serif+KR:wght@200;300&display=swap" rel="stylesheet">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#040408">
@@ -194,8 +194,8 @@
         <line x1="70" y1="40" x2="78" y2="40" stroke="#c9a84c" stroke-width="0.5" opacity="0.5"/>
       </svg>
     </div>
-    <h1 id="appTitle">スターダストフォーチュン</h1>
-    <p class="subtitle" id="appSubtitle">Stardust Fortune · 星と運命の占い</p>
+    <h1 id="appTitle">Fate Layer</h1>
+    <p class="subtitle" id="appSubtitle">星と運命の多層占術</p>
   </header>
 
   <div class="divider"><span>✦</span></div>
@@ -277,14 +277,14 @@
 // ══════════════════════════════════════════
 const I18N = {
   ja: {
-    lang:'ja', appTitle:'スターダストフォーチュン', appSubtitle:'Stardust Fortune · 星と運命の占い',
+    lang:'ja', appTitle:'Fate Layer', appSubtitle:'星と運命の多層占術',
     lName:'お名前', lLastName:'姓', lFirstName:'名', lBirth:'生年月日', lTime:'出生時刻（任意）', lGender:'性別',
     lQuestion:'今の悩み・聞きたいこと（任意）', lTypeSelect:'占術を選択',
     namePH:'例：山田 花子', lastNamePH:'例：山田', firstNamePH:'例：花子', questionPH:'例：仕事のこと、恋愛のこと、今後の人生について…',
     gOpt0:'選択してください', gOpt1:'女性', gOpt2:'男性', gOpt3:'その他',
     t_general:'総合鑑定', t_today:'今日の運勢', t_week:'今週の運勢', t_month:'今月の運勢', t_year:'今年の運勢',
     invokeBtn:'天命を読み解く', loadingText:'天の理を読み解いています…',
-    resetBtn:'▸ 新たな問いを立てる', footerText:'スターダストフォーチュン<br>占いは参考程度にお楽しみください',
+    resetBtn:'▸ 新たな問いを立てる', footerText:'Fate Layer<br>占いは参考程度にお楽しみください',
     errName:'お名前をご入力ください', errBirth:'生年月日をご入力ください',
     errAPI:'天の声を受信できませんでした。しばらくしてから再度お試しください。',
     errApiKey:'Gemini APIキーを入力してください',
@@ -298,7 +298,7 @@ const I18N = {
     buildUser(d){ const gl={female:'女性',male:'男性',other:'その他','':'未回答'}; const today=d.today; const s=d.seimei; const seimeiText=s?`\n姓名判断：\n　天格（姓・${s.lastStrokes}画）：${s.tenkakuKikyo}　地格（名・${s.firstStrokes}画）：${s.chikakuKikyo}\n　人格（${s.jinkaku}画）：${s.jinkakuKikyo}　外格（${s.gaikaku}画）：${s.gaikakuKikyo}　総格（${s.sokaku}画）：${s.sokakuKikyo}`:''; const instr={general:'四柱推命・九星気学・数秘術・星座占い・姓名判断を統合した総合鑑定をお願いします。この方の本質的な使命、性格、才能、今後の人生における指針を詳しく示してください。姓名判断の結果も必ず読み解いてください。',today:`本日（${today}）の運勢を鑑定してください。姓名判断の結果も踏まえ、恋愛・仕事・健康・金運の観点から、今日一日の流れと心がけるべきことをお伝えください。`,week:'今週（7日間）の運勢を鑑定してください。姓名判断の結果も踏まえ、週の前半・後半の流れ、チャンスが訪れる日、注意すべき日、恋愛・仕事・健康の運勢をお伝えください。',month:'今月の運勢を鑑定してください。姓名判断の結果も踏まえ、月全体の大きな流れ、重要な転機となる時期、恋愛・仕事・健康・金運の運勢をお伝えください。',year:'今年の運勢を鑑定してください。姓名判断の結果も踏まえ、年間を通じた大きな流れ、特に重要な時期、恋愛・仕事・健康・金運の年間運勢と、今年の指針をお伝えください。'}; return `以下の方の鑑定をお願いします。\n\n【鑑定対象】\nお名前：${d.name}${seimeiText}\n生年月日：${d.bd}（${d.year}年）\n出生時刻：${d.bt||'不明'}\n性別：${gl[d.gender]||'未回答'}\n星座：${d.zodiac}\n九星気学：${d.kyusei}\n四柱（年柱）：${d.shichu}\nライフパスナンバー：${d.lp}\n${d.q?'ご相談内容：'+d.q:''}\n\n${instr[d.type]}`; }
   },
   en: {
-    lang:'en', appTitle:'Stardust Fortune', appSubtitle:'Stars & Destiny · Ultimate Oracle',
+    lang:'en', appTitle:'Fate Layer', appSubtitle:'Stars & Destiny · Ultimate Oracle',
     lName:'Your Name', lLastName:'Last Name', lFirstName:'First Name', lBirth:'Date of Birth', lTime:'Birth Time (optional)', lGender:'Gender',
     lQuestion:'Your Question (optional)', lTypeSelect:'Choose Divination',
     namePH:'e.g. Jane Smith', lastNamePH:'e.g. Smith', firstNamePH:'e.g. Jane', questionPH:'e.g. Love, career, life path…',
@@ -319,7 +319,7 @@ const I18N = {
     buildUser(d){ const gl={female:'Female',male:'Male',other:'Other','':'Unspecified'}; const today=d.today; const s=d.seimei; const seimeiText=s?`\nName Numerology (Seimei):\n  Heaven (${s.lastStrokes} strokes): ${s.tenkakuKikyo}  Earth (${s.firstStrokes} strokes): ${s.chikakuKikyo}\n  Human (${s.jinkaku}): ${s.jinkakuKikyo}  Outer (${s.gaikaku}): ${s.gaikakuKikyo}  Total (${s.sokaku}): ${s.sokakuKikyo}`:''; const instr={general:"Provide a holistic reading integrating all divination traditions including name numerology — reveal this person's core mission, character, talents, and life guidance.",today:`Read the fortune for today (${today}). Taking name numerology into account, cover love, work, health, and finances.`,week:"Read the fortune for this week. Taking name numerology into account, describe the weekly flow, lucky days, and guidance for love, work, and health.",month:"Read the fortune for this month. Taking name numerology into account, describe the overall flow, key turning points, and guidance for love, work, health, and finances.",year:"Read the fortune for this year. Taking name numerology into account, describe the annual flow, most important periods, and guidance for love, work, health, and finances."}; return `Please provide a reading for:\n\nName: ${d.name}${seimeiText}\nBirth Date: ${d.bd} (born ${d.year})\nBirth Time: ${d.bt||'Unknown'}\nGender: ${gl[d.gender]||'Unspecified'}\nZodiac: ${d.zodiac}\nKyusei Star: ${d.kyusei}\nYear Pillar: ${d.shichu}\nLife Path: ${d.lp}\n${d.q?'Question: '+d.q:''}\n\n${instr[d.type]}`; }
   },
   zh: {
-    lang:'zh', appTitle:'星尘命运', appSubtitle:'Stardust Fortune · 星与命运的占卜',
+    lang:'zh', appTitle:'Fate Layer', appSubtitle:'命运层叠 · 星与命运的占卜',
     lName:'姓名', lLastName:'姓', lFirstName:'名', lBirth:'出生日期', lTime:'出生时间（可选）', lGender:'性别',
     lQuestion:'您的问题（可选）', lTypeSelect:'选择占术',
     namePH:'例：张三', lastNamePH:'例：张', firstNamePH:'例：三', questionPH:'例：关于感情、事业、未来方向…',
@@ -340,7 +340,7 @@ const I18N = {
     buildUser(d){ const gl={female:'女性',male:'男性',other:'其他','':'未填写'}; const today=d.today; const s=d.seimei; const seimeiText=s?`\n姓名判断：\n　天格（姓・${s.lastStrokes}画）：${s.tenkakuKikyo}　地格（名・${s.firstStrokes}画）：${s.chikakuKikyo}\n　人格（${s.jinkaku}画）：${s.jinkakuKikyo}　外格（${s.gaikaku}画）：${s.gaikakuKikyo}　总格（${s.sokaku}画）：${s.sokakuKikyo}`:''; const instr={general:'综合四柱推命、九星气学、数秘术、星座占卜与姓名判断，揭示此人的核心使命、性格、才能与人生指引。请务必解读姓名判断结果。',today:`鉴定今日（${today}）的运势，结合姓名判断，涵盖感情、事业、健康、财运，说明今日的能量流向与注意事项。`,week:'鉴定本周运势，结合姓名判断，说明上半周与下半周的走势、吉日与需注意的日子，以及感情、事业、健康的运势。',month:'鉴定本月运势，结合姓名判断，说明整体走势、重要转折时机，以及感情、事业、健康、财运的月度运势。',year:'鉴定今年运势，结合姓名判断，说明全年大势、最重要的时期，以及感情、事业、健康、财运的年度运势与指引。'}; return `请为以下人士进行鉴定：\n\n姓名：${d.name}${seimeiText}\n出生日期：${d.bd}（${d.year}年）\n出生时间：${d.bt||'不详'}\n性别：${gl[d.gender]||'未填写'}\n星座：${d.zodiac}\n九星气学：${d.kyusei}\n年柱：${d.shichu}\n生命路径数：${d.lp}\n${d.q?'问题：'+d.q:''}\n\n${instr[d.type]}`; }
   },
   ko: {
-    lang:'ko', appTitle:'스타더스트 포춘', appSubtitle:'Stardust Fortune · 별과 운명의 점술',
+    lang:'ko', appTitle:'Fate Layer', appSubtitle:'운명의 층 · 별과 운명의 점술',
     lName:'성명', lLastName:'성', lFirstName:'이름', lBirth:'생년월일', lTime:'출생 시각 (선택)', lGender:'성별',
     lQuestion:'질문 사항 (선택)', lTypeSelect:'점술 선택',
     namePH:'예: 김민지', lastNamePH:'예: 김', firstNamePH:'예: 민지', questionPH:'예: 사랑, 직업, 인생 방향에 대해…',
@@ -361,7 +361,7 @@ const I18N = {
     buildUser(d){ const gl={female:'여성',male:'남성',other:'기타','':'미입력'}; const today=d.today; const s=d.seimei; const seimeiText=s?`\n성명판단：\n　천격（성・${s.lastStrokes}획）：${s.tenkakuKikyo}　지격（이름・${s.firstStrokes}획）：${s.chikakuKikyo}\n　인격（${s.jinkaku}획）：${s.jinkakuKikyo}　외격（${s.gaikaku}획）：${s.gaikakuKikyo}　총격（${s.sokaku}획）：${s.sokakuKikyo}`:''; const instr={general:'사주추명, 구성기학, 수비술, 별자리 점, 성명판단을 통합하여 이 분의 핵심 사명, 성격, 재능과 인생 지침을 알려주세요. 성명판단 결과도 반드시 풀어주세요.',today:`오늘(${today})의 운세를 감정해 주세요. 성명판단 결과도 踏まえ, 사랑, 직업, 건강, 재물 운을 중심으로 오늘의 흐름과 주의사항을 알려주세요.`,week:'이번 주 운세를 감정해 주세요. 성명판단 결과도 踏まえ, 주 전반부와 후반부의 흐름, 길일과 주의해야 할 날, 사랑·직업·건강 운세를 알려주세요.',month:'이번 달 운세를 감정해 주세요. 성명판단 결과도 踏まえ, 전체적인 흐름, 중요한 전환점, 사랑·직업·건강·재물 운의 월별 운세를 알려주세요.',year:'올해 운세를 감정해 주세요. 성명판단 결과도 踏まえ, 연간 흐름, 가장 중요한 시기, 사랑·직업·건강·재물 운의 연간 운세와 지침을 알려주세요.'}; return `다음 분의 감정을 해주세요.\n\n이름: ${d.name}${seimeiText}\n생년월일: ${d.bd} (${d.year}년생)\n출생 시각: ${d.bt||'불명'}\n성별: ${gl[d.gender]||'미입력'}\n별자리: ${d.zodiac}\n구성기학: ${d.kyusei}\n사주(년주): ${d.shichu}\n라이프패스 넘버: ${d.lp}\n${d.q?'질문: '+d.q:''}\n\n${instr[d.type]}`; }
   },
   fr: {
-    lang:'fr', appTitle:'Stardust Fortune', appSubtitle:'Poussi\u00e8re d\u2019\u00c9toiles · Oracle Supr\u00eame',
+    lang:'fr', appTitle:'Fate Layer', appSubtitle:'Poussi\u00e8re d\u2019\u00c9toiles · Oracle Supr\u00eame',
     lName:'Votre Nom', lLastName:'Nom de famille', lFirstName:'Prénom', lBirth:'Date de Naissance', lTime:'Heure de Naissance (optionnel)', lGender:'Genre',
     lQuestion:'Votre Question (optionnel)', lTypeSelect:'Choisir la Divination',
     namePH:'ex : Marie Dupont', lastNamePH:'ex : Dupont', firstNamePH:'ex : Marie', questionPH:"ex : À propos de l'amour, carrière, avenir…",

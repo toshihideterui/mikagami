@@ -1,7 +1,7 @@
 {
-  "name": "スターダストフォーチュン",
-  "short_name": "スターダスト",
-  "description": "星と運命の占いアプリ — Stardust Fortune",
+  "name": "Fate Layer",
+  "short_name": "Fate Layer",
+  "description": "星と運命の多層占術アプリ",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#040408",
