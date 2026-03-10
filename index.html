@@ -221,6 +221,7 @@
           <button onclick="toggleApiKeyVisibility()" id="toggleBtn" style="padding:10px 14px;background:transparent;border:1px solid rgba(201,168,76,0.2);color:var(--text-dim);font-size:0.75rem;cursor:pointer;white-space:nowrap;transition:all .3s" onmouseover="this.style.borderColor='rgba(201,168,76,0.5)'" onmouseout="this.style.borderColor='rgba(201,168,76,0.2)'">表示</button>
         </div>
         <p id="apikeyNote" style="font-size:0.62rem;color:var(--text-dim);margin-top:6px;letter-spacing:0.05em;line-height:1.8"></p>
+        <p id="apikeyStatus" style="font-size:0.62rem;color:var(--gold-dim);margin-top:4px;letter-spacing:0.05em;line-height:1.8;display:none"></p>
       </div>
     </div>
 
@@ -442,13 +443,13 @@ let currentProvider = 'gemini';
 
 const PROVIDER_INFO = {
   gemini: {
-    placeholder: 'AIza...',
+    placeholder: 'AIza... , AIza... , AIza...',
     notes: {
-      ja: 'Google AI Studio（aistudio.google.com）で無料取得。Gemini 2.0 Flash使用。1日1,500リクエスト無料。',
-      en: 'Get a free key at Google AI Studio (aistudio.google.com). Uses Gemini 2.0 Flash. 1,500 free requests/day.',
-      zh: '在 Google AI Studio（aistudio.google.com）免费获取。使用 Gemini 2.0 Flash。每日免费1,500次。',
-      ko: 'Google AI Studio(aistudio.google.com)에서 무료 발급. Gemini 2.0 Flash 사용. 하루 1,500회 무료.',
-      fr: 'Obtenez une clé gratuite sur Google AI Studio (aistudio.google.com). Utilise Gemini 2.0 Flash. 1 500 requêtes gratuites/jour.',
+      ja: 'Google AI Studio（aistudio.google.com）で無料取得。Gemini 2.0 Flash使用。1日1,500リクエスト無料。複数キーをカンマ区切りで入力すると上限到達時に自動切替します。',
+      en: 'Get a free key at Google AI Studio (aistudio.google.com). Uses Gemini 2.0 Flash. 1,500 free requests/day. Enter multiple keys separated by commas for automatic rotation.',
+      zh: '在 Google AI Studio（aistudio.google.com）免费获取。使用 Gemini 2.0 Flash。每日免费1,500次。可用逗号分隔多个密钥，达到上限时自动切换。',
+      ko: 'Google AI Studio(aistudio.google.com)에서 무료 발급. Gemini 2.0 Flash 사용. 하루 1,500회 무료. 여러 키를 쉼표로 구분하면 한도 초과 시 자동 전환됩니다.',
+      fr: 'Obtenez une clé gratuite sur Google AI Studio (aistudio.google.com). Utilise Gemini 2.0 Flash. 1 500 requêtes gratuites/jour. Entrez plusieurs clés séparées par des virgules pour la rotation automatique.',
     },
     labels: { ja:'Gemini APIキー', en:'Gemini API Key', zh:'Gemini API 密钥', ko:'Gemini API 키', fr:'Clé API Gemini' },
   },
@@ -671,14 +672,61 @@ async function invokeFortune() {
     let text = '';
 
     if (currentProvider === 'gemini') {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        { method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{maxOutputTokens:1200,temperature:0.85} }) }
-      );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error?.message || t.errAPI);
-      text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      // カンマ区切りで複数キーをパース
+      const geminiKeys = apiKey.split(',').map(k => k.trim()).filter(k => k.length > 0);
+      if (geminiKeys.length === 0) throw new Error('NO_KEY');
+
+      let lastError = null;
+      let usedKeyIndex = -1;
+
+      for (let i = 0; i < geminiKeys.length; i++) {
+        const key = geminiKeys[i];
+        try {
+          const res = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+            { method:'POST', headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{maxOutputTokens:1200,temperature:0.85} }) }
+          );
+          const data = await res.json();
+          if (!res.ok) {
+            const errMsg = data.error?.message || '';
+            // 上限エラーなら次のキーへ
+            if (errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED') || res.status === 429) {
+              lastError = new Error('QUOTA:' + errMsg);
+              continue;
+            }
+            throw new Error(errMsg || t.errAPI);
+          }
+          text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          usedKeyIndex = i;
+          break;
+        } catch(e) {
+          if (e.message.startsWith('QUOTA:')) {
+            lastError = e;
+            continue; // 次のキーへ
+          }
+          throw e; // その他のエラーはそのまま投げる
+        }
+      }
+
+      if (!text && lastError) {
+        // 全キーが上限切れ
+        const statusEl = document.getElementById('apikeyStatus');
+        if (statusEl) {
+          statusEl.style.display = 'block';
+          statusEl.textContent = `⚠ ${geminiKeys.length}件のキー全て本日の上限に達しました。明日リセットされます。`;
+        }
+        throw new Error('ALL_QUOTA');
+      }
+
+      // 複数キーの場合、使用中キーをステータス表示
+      if (geminiKeys.length > 1 && usedKeyIndex >= 0) {
+        const statusEl = document.getElementById('apikeyStatus');
+        if (statusEl) {
+          statusEl.style.display = 'block';
+          statusEl.textContent = `✦ キー ${usedKeyIndex + 1}/${geminiKeys.length} を使用中`;
+        }
+      }
 
     } else if (currentProvider === 'claude') {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -711,7 +759,9 @@ async function invokeFortune() {
     document.getElementById('loadingVeil').className = 'loading-veil';
     document.getElementById('formSection').style.display = 'block';
     const msg = err.message || '';
-    if (msg.includes('API_KEY') || msg.includes('API key')) {
+    if (msg === 'ALL_QUOTA') {
+      showError('全てのGemini APIキーが本日の上限に達しました。明日また試すか、別のキーを追加してください。');
+    } else if (msg.includes('API_KEY') || msg.includes('API key') || msg === 'NO_KEY') {
       showError(t.errApiKeyInvalid);
     } else if (msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
       showError('本日の無料利用上限に達しました。明日また試してください。');
