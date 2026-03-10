@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>宿命の鏡 — 究極占術</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Serif+JP:wght@200;300;400&family=Noto+Serif+SC:wght@200;300&family=Noto+Serif+KR:wght@200;300&display=swap" rel="stylesheet">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#040408">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js');
+    });
+  }
+</script>
 <style>
   :root {
     --void: #040408; --deep: #08080f; --ink: #0d0d1a;
@@ -200,7 +210,8 @@
     </div>
 
     <div class="field-group">
-      <div class="field"><label id="lName"></label><input type="text" id="name" placeholder=""></div>
+      <div class="field"><label id="lLastName"></label><input type="text" id="lastName" placeholder=""></div>
+      <div class="field"><label id="lFirstName"></label><input type="text" id="firstName" placeholder=""></div>
       <div class="field"><label id="lBirth"></label><input type="date" id="birthdate"></div>
       <div class="field"><label id="lTime"></label><input type="time" id="birthtime"></div>
       <div class="field">
@@ -252,9 +263,9 @@
 const I18N = {
   ja: {
     lang:'ja', appTitle:'宿命の鏡', appSubtitle:'The Mirror of Fate · 究極占術',
-    lName:'お名前', lBirth:'生年月日', lTime:'出生時刻（任意）', lGender:'性別',
+    lName:'お名前', lLastName:'姓', lFirstName:'名', lBirth:'生年月日', lTime:'出生時刻（任意）', lGender:'性別',
     lQuestion:'今の悩み・聞きたいこと（任意）', lTypeSelect:'占術を選択',
-    namePH:'例：山田 花子', questionPH:'例：仕事のこと、恋愛のこと、今後の人生について…',
+    namePH:'例：山田 花子', lastNamePH:'例：山田', firstNamePH:'例：花子', questionPH:'例：仕事のこと、恋愛のこと、今後の人生について…',
     gOpt0:'選択してください', gOpt1:'女性', gOpt2:'男性', gOpt3:'その他',
     t_general:'総合鑑定', t_today:'今日の運勢', t_week:'今週の運勢', t_month:'今月の運勢', t_year:'今年の運勢',
     invokeBtn:'天命を読み解く', loadingText:'天の理を読み解いています…',
@@ -269,13 +280,13 @@ const I18N = {
     honorific:' 様', lpLabel:'ライフパス',
     typeLabels:{ general:'総合霊的鑑定', today:'今日の運勢鑑定', week:'今週の運勢鑑定', month:'今月の運勢鑑定', year:'今年の運勢鑑定' },
     system:`あなたは数千年の叡智を持つ神秘の占い師です。東洋と西洋の占術を融合させた深遠な鑑定を行います。言葉は古典的で格調高く、時に詩的な表現を使いながらも、具体的で実践的なアドバイスを織り交ぜてください。回答は必ず日本語で、700〜1000文字程度の本格的な鑑定文を書いてください。段落で区切り、余計な記号や見出しは使わず連続した文章で書いてください。`,
-    buildUser(d){ const gl={female:'女性',male:'男性',other:'その他','':'未回答'}; const today=d.today; const instr={general:'四柱推命・九星気学・数秘術・星座占いを統合した総合鑑定をお願いします。この方の本質的な使命、性格、才能、今後の人生における指針を詳しく示してください。',today:`本日（${today}）の運勢を鑑定してください。恋愛・仕事・健康・金運の観点から、今日一日の流れと心がけるべきことをお伝えください。`,week:'今週（7日間）の運勢を鑑定してください。週の前半・後半の流れ、チャンスが訪れる日、注意すべき日、恋愛・仕事・健康の運勢をお伝えください。',month:'今月の運勢を鑑定してください。月全体の大きな流れ、重要な転機となる時期、恋愛・仕事・健康・金運の運勢をお伝えください。',year:'今年の運勢を鑑定してください。年間を通じた大きな流れ、特に重要な時期、恋愛・仕事・健康・金運の年間運勢と、今年の指針をお伝えください。'}; return `以下の方の鑑定をお願いします。\n\n【鑑定対象】\nお名前：${d.name}\n生年月日：${d.bd}（${d.year}年）\n出生時刻：${d.bt||'不明'}\n性別：${gl[d.gender]||'未回答'}\n星座：${d.zodiac}\n九星気学：${d.kyusei}\n四柱（年柱）：${d.shichu}\nライフパスナンバー：${d.lp}\n${d.q?'ご相談内容：'+d.q:''}\n\n${instr[d.type]}`; }
+    buildUser(d){ const gl={female:'女性',male:'男性',other:'その他','':'未回答'}; const today=d.today; const s=d.seimei; const seimeiText=s?`\n姓名判断：\n　天格（姓・${s.lastStrokes}画）：${s.tenkakuKikyo}　地格（名・${s.firstStrokes}画）：${s.chikakuKikyo}\n　人格（${s.jinkaku}画）：${s.jinkakuKikyo}　外格（${s.gaikaku}画）：${s.gaikakuKikyo}　総格（${s.sokaku}画）：${s.sokakuKikyo}`:''; const instr={general:'四柱推命・九星気学・数秘術・星座占い・姓名判断を統合した総合鑑定をお願いします。この方の本質的な使命、性格、才能、今後の人生における指針を詳しく示してください。姓名判断の結果も必ず読み解いてください。',today:`本日（${today}）の運勢を鑑定してください。姓名判断の結果も踏まえ、恋愛・仕事・健康・金運の観点から、今日一日の流れと心がけるべきことをお伝えください。`,week:'今週（7日間）の運勢を鑑定してください。姓名判断の結果も踏まえ、週の前半・後半の流れ、チャンスが訪れる日、注意すべき日、恋愛・仕事・健康の運勢をお伝えください。',month:'今月の運勢を鑑定してください。姓名判断の結果も踏まえ、月全体の大きな流れ、重要な転機となる時期、恋愛・仕事・健康・金運の運勢をお伝えください。',year:'今年の運勢を鑑定してください。姓名判断の結果も踏まえ、年間を通じた大きな流れ、特に重要な時期、恋愛・仕事・健康・金運の年間運勢と、今年の指針をお伝えください。'}; return `以下の方の鑑定をお願いします。\n\n【鑑定対象】\nお名前：${d.name}${seimeiText}\n生年月日：${d.bd}（${d.year}年）\n出生時刻：${d.bt||'不明'}\n性別：${gl[d.gender]||'未回答'}\n星座：${d.zodiac}\n九星気学：${d.kyusei}\n四柱（年柱）：${d.shichu}\nライフパスナンバー：${d.lp}\n${d.q?'ご相談内容：'+d.q:''}\n\n${instr[d.type]}`; }
   },
   en: {
     lang:'en', appTitle:'Mirror of Fate', appSubtitle:'Ancient Wisdom · Ultimate Oracle',
-    lName:'Your Name', lBirth:'Date of Birth', lTime:'Birth Time (optional)', lGender:'Gender',
+    lName:'Your Name', lLastName:'Last Name', lFirstName:'First Name', lBirth:'Date of Birth', lTime:'Birth Time (optional)', lGender:'Gender',
     lQuestion:'Your Question (optional)', lTypeSelect:'Choose Divination',
-    namePH:'e.g. Jane Smith', questionPH:'e.g. Love, career, life path…',
+    namePH:'e.g. Jane Smith', lastNamePH:'e.g. Smith', firstNamePH:'e.g. Jane', questionPH:'e.g. Love, career, life path…',
     gOpt0:'Please select', gOpt1:'Female', gOpt2:'Male', gOpt3:'Other',
     t_general:'Full Reading', t_today:"Today's Fortune", t_week:"This Week's Fortune", t_month:"This Month's Fortune", t_year:"This Year's Fortune",
     invokeBtn:'Reveal My Destiny', loadingText:'Consulting the cosmic archives…',
@@ -290,13 +301,13 @@ const I18N = {
     honorific:'', lpLabel:'Life Path',
     typeLabels:{ general:'Full Spiritual Reading', today:"Today's Fortune", week:"This Week's Fortune", month:"This Month's Fortune", year:"This Year's Fortune" },
     system:`You are a mystical oracle with millennia of wisdom, blending Eastern and Western divination. Write in an elevated, slightly archaic, and poetic style, weaving in practical guidance. Respond exclusively in English with a 400–600 word reading. Use flowing paragraphs — no headers, bullets, or symbols.`,
-    buildUser(d){ const gl={female:'Female',male:'Male',other:'Other','':'Unspecified'}; const today=d.today; const instr={general:"Provide a holistic reading integrating all divination traditions — reveal this person's core mission, character, talents, and life guidance.",today:`Read the fortune for today (${today}). Cover love, work, health, and finances — describe today's energy and key guidance.`,week:"Read the fortune for this week (7 days). Describe the energy of the early and later half of the week, lucky days, days to be cautious, and guidance for love, work, and health.",month:"Read the fortune for this month. Describe the overall flow, key turning points, and guidance for love, work, health, and finances.",year:"Read the fortune for this year. Describe the annual flow, most important periods, and guidance for love, work, health, and finances."}; return `Please provide a reading for:\n\nName: ${d.name}\nBirth Date: ${d.bd} (born ${d.year})\nBirth Time: ${d.bt||'Unknown'}\nGender: ${gl[d.gender]||'Unspecified'}\nZodiac: ${d.zodiac}\nKyusei Star: ${d.kyusei}\nYear Pillar: ${d.shichu}\nLife Path: ${d.lp}\n${d.q?'Question: '+d.q:''}\n\n${instr[d.type]}`; }
+    buildUser(d){ const gl={female:'Female',male:'Male',other:'Other','':'Unspecified'}; const today=d.today; const s=d.seimei; const seimeiText=s?`\nName Numerology (Seimei):\n  Heaven (${s.lastStrokes} strokes): ${s.tenkakuKikyo}  Earth (${s.firstStrokes} strokes): ${s.chikakuKikyo}\n  Human (${s.jinkaku}): ${s.jinkakuKikyo}  Outer (${s.gaikaku}): ${s.gaikakuKikyo}  Total (${s.sokaku}): ${s.sokakuKikyo}`:''; const instr={general:"Provide a holistic reading integrating all divination traditions including name numerology — reveal this person's core mission, character, talents, and life guidance.",today:`Read the fortune for today (${today}). Taking name numerology into account, cover love, work, health, and finances.`,week:"Read the fortune for this week. Taking name numerology into account, describe the weekly flow, lucky days, and guidance for love, work, and health.",month:"Read the fortune for this month. Taking name numerology into account, describe the overall flow, key turning points, and guidance for love, work, health, and finances.",year:"Read the fortune for this year. Taking name numerology into account, describe the annual flow, most important periods, and guidance for love, work, health, and finances."}; return `Please provide a reading for:\n\nName: ${d.name}${seimeiText}\nBirth Date: ${d.bd} (born ${d.year})\nBirth Time: ${d.bt||'Unknown'}\nGender: ${gl[d.gender]||'Unspecified'}\nZodiac: ${d.zodiac}\nKyusei Star: ${d.kyusei}\nYear Pillar: ${d.shichu}\nLife Path: ${d.lp}\n${d.q?'Question: '+d.q:''}\n\n${instr[d.type]}`; }
   },
   zh: {
     lang:'zh', appTitle:'命运之镜', appSubtitle:'天命占術 · 东西方智慧的结晶',
-    lName:'姓名', lBirth:'出生日期', lTime:'出生时间（可选）', lGender:'性别',
+    lName:'姓名', lLastName:'姓', lFirstName:'名', lBirth:'出生日期', lTime:'出生时间（可选）', lGender:'性别',
     lQuestion:'您的问题（可选）', lTypeSelect:'选择占术',
-    namePH:'例：张三', questionPH:'例：关于感情、事业、未来方向…',
+    namePH:'例：张三', lastNamePH:'例：张', firstNamePH:'例：三', questionPH:'例：关于感情、事业、未来方向…',
     gOpt0:'请选择', gOpt1:'女性', gOpt2:'男性', gOpt3:'其他',
     t_general:'综合鉴定', t_today:'今日运势', t_week:'本周运势', t_month:'本月运势', t_year:'今年运势',
     invokeBtn:'揭示天命', loadingText:'正在解读天机…',
@@ -311,13 +322,13 @@ const I18N = {
     honorific:' 先生/女士', lpLabel:'生命路径数',
     typeLabels:{ general:'综合灵性鉴定', today:'今日运势鉴定', week:'本周运势鉴定', month:'本月运势鉴定', year:'今年运势鉴定' },
     system:`你是一位拥有数千年智慧的神秘占卜师，融合东西方占术进行深邃鉴定。语言典雅古朴富有诗意，同时穿插实用建议。请用中文回答，700至1000字，段落分隔，不使用标题或项目符号，写成连贯文章。`,
-    buildUser(d){ const gl={female:'女性',male:'男性',other:'其他','':'未填写'}; const today=d.today; const instr={general:'综合四柱推命、九星气学、数秘术和星座占卜，揭示此人的核心使命、性格、才能与人生指引。',today:`鉴定今日（${today}）的运势，涵盖感情、事业、健康、财运，说明今日的能量流向与注意事项。`,week:'鉴定本周（7天）运势，说明上半周与下半周的走势、吉日与需注意的日子，以及感情、事业、健康的运势。',month:'鉴定本月运势，说明整体走势、重要转折时机，以及感情、事业、健康、财运的月度运势。',year:'鉴定今年运势，说明全年大势、最重要的时期，以及感情、事业、健康、财运的年度运势与指引。'}; return `请为以下人士进行鉴定：\n\n姓名：${d.name}\n出生日期：${d.bd}（${d.year}年）\n出生时间：${d.bt||'不详'}\n性别：${gl[d.gender]||'未填写'}\n星座：${d.zodiac}\n九星气学：${d.kyusei}\n年柱：${d.shichu}\n生命路径数：${d.lp}\n${d.q?'问题：'+d.q:''}\n\n${instr[d.type]}`; }
+    buildUser(d){ const gl={female:'女性',male:'男性',other:'其他','':'未填写'}; const today=d.today; const s=d.seimei; const seimeiText=s?`\n姓名判断：\n　天格（姓・${s.lastStrokes}画）：${s.tenkakuKikyo}　地格（名・${s.firstStrokes}画）：${s.chikakuKikyo}\n　人格（${s.jinkaku}画）：${s.jinkakuKikyo}　外格（${s.gaikaku}画）：${s.gaikakuKikyo}　总格（${s.sokaku}画）：${s.sokakuKikyo}`:''; const instr={general:'综合四柱推命、九星气学、数秘术、星座占卜与姓名判断，揭示此人的核心使命、性格、才能与人生指引。请务必解读姓名判断结果。',today:`鉴定今日（${today}）的运势，结合姓名判断，涵盖感情、事业、健康、财运，说明今日的能量流向与注意事项。`,week:'鉴定本周运势，结合姓名判断，说明上半周与下半周的走势、吉日与需注意的日子，以及感情、事业、健康的运势。',month:'鉴定本月运势，结合姓名判断，说明整体走势、重要转折时机，以及感情、事业、健康、财运的月度运势。',year:'鉴定今年运势，结合姓名判断，说明全年大势、最重要的时期，以及感情、事业、健康、财运的年度运势与指引。'}; return `请为以下人士进行鉴定：\n\n姓名：${d.name}${seimeiText}\n出生日期：${d.bd}（${d.year}年）\n出生时间：${d.bt||'不详'}\n性别：${gl[d.gender]||'未填写'}\n星座：${d.zodiac}\n九星气学：${d.kyusei}\n年柱：${d.shichu}\n生命路径数：${d.lp}\n${d.q?'问题：'+d.q:''}\n\n${instr[d.type]}`; }
   },
   ko: {
     lang:'ko', appTitle:'운명의 거울', appSubtitle:'천명 점술 · 동서양의 지혜',
-    lName:'성명', lBirth:'생년월일', lTime:'출생 시각 (선택)', lGender:'성별',
+    lName:'성명', lLastName:'성', lFirstName:'이름', lBirth:'생년월일', lTime:'출생 시각 (선택)', lGender:'성별',
     lQuestion:'질문 사항 (선택)', lTypeSelect:'점술 선택',
-    namePH:'예: 김민지', questionPH:'예: 사랑, 직업, 인생 방향에 대해…',
+    namePH:'예: 김민지', lastNamePH:'예: 김', firstNamePH:'예: 민지', questionPH:'예: 사랑, 직업, 인생 방향에 대해…',
     gOpt0:'선택하세요', gOpt1:'여성', gOpt2:'남성', gOpt3:'기타',
     t_general:'종합 감정', t_today:'오늘의 운세', t_week:'이번 주 운세', t_month:'이번 달 운세', t_year:'올해 운세',
     invokeBtn:'천명을 읽다', loadingText:'천기를 해석하는 중…',
@@ -332,13 +343,13 @@ const I18N = {
     honorific:' 님', lpLabel:'라이프패스',
     typeLabels:{ general:'종합 영적 감정', today:'오늘의 운세 감정', week:'이번 주 운세 감정', month:'이번 달 운세 감정', year:'올해 운세 감정' },
     system:`당신은 수천 년의 지혜를 가진 신비로운 점술사입니다. 동양과 서양의 점술을 융합하여 심오한 감정을 행합니다. 언어는 고전적이고 격조 있게, 때로 시적인 표현을 사용하면서도 구체적이고 실용적인 조언을 섞어주세요. 반드시 한국어로 답하고, 700~1000자 분량의 본격적인 감정문을 작성해 주세요. 문단으로 나누고, 제목이나 기호 없이 이어지는 문장으로 써주세요.`,
-    buildUser(d){ const gl={female:'여성',male:'남성',other:'기타','':'미입력'}; const today=d.today; const instr={general:'사주추명, 구성기학, 수비술, 별자리 점을 통합하여 이 분의 핵심 사명, 성격, 재능과 인생 지침을 알려주세요.',today:`오늘(${today})의 운세를 감정해 주세요. 사랑, 직업, 건강, 재물 운을 중심으로 오늘의 흐름과 주의사항을 알려주세요.`,week:'이번 주(7일간)의 운세를 감정해 주세요. 주 전반부와 후반부의 흐름, 길일과 주의해야 할 날, 사랑·직업·건강 운세를 알려주세요.',month:'이번 달의 운세를 감정해 주세요. 전체적인 흐름, 중요한 전환점, 사랑·직업·건강·재물 운의 월별 운세를 알려주세요.',year:'올해의 운세를 감정해 주세요. 연간 흐름, 가장 중요한 시기, 사랑·직업·건강·재물 운의 연간 운세와 지침을 알려주세요.'}; return `다음 분의 감정을 해주세요.\n\n이름: ${d.name}\n생년월일: ${d.bd} (${d.year}년생)\n출생 시각: ${d.bt||'불명'}\n성별: ${gl[d.gender]||'미입력'}\n별자리: ${d.zodiac}\n구성기학: ${d.kyusei}\n사주(년주): ${d.shichu}\n라이프패스 넘버: ${d.lp}\n${d.q?'질문: '+d.q:''}\n\n${instr[d.type]}`; }
+    buildUser(d){ const gl={female:'여성',male:'남성',other:'기타','':'미입력'}; const today=d.today; const s=d.seimei; const seimeiText=s?`\n성명판단：\n　천격（성・${s.lastStrokes}획）：${s.tenkakuKikyo}　지격（이름・${s.firstStrokes}획）：${s.chikakuKikyo}\n　인격（${s.jinkaku}획）：${s.jinkakuKikyo}　외격（${s.gaikaku}획）：${s.gaikakuKikyo}　총격（${s.sokaku}획）：${s.sokakuKikyo}`:''; const instr={general:'사주추명, 구성기학, 수비술, 별자리 점, 성명판단을 통합하여 이 분의 핵심 사명, 성격, 재능과 인생 지침을 알려주세요. 성명판단 결과도 반드시 풀어주세요.',today:`오늘(${today})의 운세를 감정해 주세요. 성명판단 결과도 踏まえ, 사랑, 직업, 건강, 재물 운을 중심으로 오늘의 흐름과 주의사항을 알려주세요.`,week:'이번 주 운세를 감정해 주세요. 성명판단 결과도 踏まえ, 주 전반부와 후반부의 흐름, 길일과 주의해야 할 날, 사랑·직업·건강 운세를 알려주세요.',month:'이번 달 운세를 감정해 주세요. 성명판단 결과도 踏まえ, 전체적인 흐름, 중요한 전환점, 사랑·직업·건강·재물 운의 월별 운세를 알려주세요.',year:'올해 운세를 감정해 주세요. 성명판단 결과도 踏まえ, 연간 흐름, 가장 중요한 시기, 사랑·직업·건강·재물 운의 연간 운세와 지침을 알려주세요.'}; return `다음 분의 감정을 해주세요.\n\n이름: ${d.name}${seimeiText}\n생년월일: ${d.bd} (${d.year}년생)\n출생 시각: ${d.bt||'불명'}\n성별: ${gl[d.gender]||'미입력'}\n별자리: ${d.zodiac}\n구성기학: ${d.kyusei}\n사주(년주): ${d.shichu}\n라이프패스 넘버: ${d.lp}\n${d.q?'질문: '+d.q:''}\n\n${instr[d.type]}`; }
   },
   fr: {
     lang:'fr', appTitle:'Miroir du Destin', appSubtitle:'Sagesse Ancestrale · Oracle Suprême',
-    lName:'Votre Nom', lBirth:'Date de Naissance', lTime:'Heure de Naissance (optionnel)', lGender:'Genre',
+    lName:'Votre Nom', lLastName:'Nom de famille', lFirstName:'Prénom', lBirth:'Date de Naissance', lTime:'Heure de Naissance (optionnel)', lGender:'Genre',
     lQuestion:'Votre Question (optionnel)', lTypeSelect:'Choisir la Divination',
-    namePH:'ex : Marie Dupont', questionPH:"ex : À propos de l'amour, carrière, avenir…",
+    namePH:'ex : Marie Dupont', lastNamePH:'ex : Dupont', firstNamePH:'ex : Marie', questionPH:"ex : À propos de l'amour, carrière, avenir…",
     gOpt0:'Veuillez sélectionner', gOpt1:'Féminin', gOpt2:'Masculin', gOpt3:'Autre',
     t_general:'Lecture Complète', t_today:"Horoscope du Jour", t_week:"Horoscope de la Semaine", t_month:"Horoscope du Mois", t_year:"Horoscope de l\u2019Année",
     invokeBtn:'Révéler Mon Destin', loadingText:'Consultation des archives cosmiques…',
@@ -353,7 +364,7 @@ const I18N = {
     honorific:'', lpLabel:'Chemin de Vie',
     typeLabels:{ general:'Lecture Spirituelle Complète', today:"Horoscope du Jour", week:"Horoscope de la Semaine", month:"Horoscope du Mois", year:"Horoscope de l\u2019Année" },
     system:`Vous êtes un oracle mystique doté de millénaires de sagesse, fusionnant les divinitations orientale et occidentale. Écrivez dans un style élevé, légèrement archaïque et poétique, en y intégrant des conseils pratiques. Répondez exclusivement en français avec une lecture de 400 à 600 mots. Utilisez des paragraphes fluides — aucun titre, puce ou symbole.`,
-    buildUser(d){ const gl={female:"Féminin",male:"Masculin",other:"Autre","":"Non précisé"}; const today=d.today; const instr={general:"Fournissez une lecture holistique intégrant toutes les traditions — révélez la mission essentielle, le caractère, les talents et les orientations de vie.",today:`Lisez la fortune du jour (${today}). Couvrez l\u2019amour, le travail, la santé et les finances — décrivez l\u2019énergie du jour et les conseils clés.`,week:"Lisez la fortune de cette semaine (7 jours). Décrivez l\u2019énergie de la première et de la seconde moitié, les jours fastes et ceux à surveiller, ainsi que les conseils en amour, travail et santé.",month:"Lisez la fortune de ce mois. Décrivez le flux général, les tournants importants et les conseils en amour, travail, santé et finances.",year:"Lisez la fortune de cette année. Décrivez le flux annuel, les périodes les plus importantes et les conseils en amour, travail, santé et finances."}; const bt=d.bt||"Inconnue"; const gv=gl[d.gender]||"Non précisé"; const qv=d.q?"Question : "+d.q:""; return `Veuillez effectuer une lecture pour :\n\nNom : ${d.name}\nDate de naissance : ${d.bd} (né(e) en ${d.year})\nHeure de naissance : ${bt}\nGenre : ${gv}\nSigne : ${d.zodiac}\nÉtoile Kyusei : ${d.kyusei}\nPilier de l\u2019année : ${d.shichu}\nChemin de vie : ${d.lp}\n${qv}\n\n${instr[d.type]}`; }
+    buildUser(d){ const gl={female:"Féminin",male:"Masculin",other:"Autre","":"Non précisé"}; const today=d.today; const s=d.seimei; const seimeiText=s?`\nNumérologie du nom :\n  Ciel (${s.lastStrokes} traits) : ${s.tenkakuKikyo}  Terre (${s.firstStrokes} traits) : ${s.chikakuKikyo}\n  Humain (${s.jinkaku}) : ${s.jinkakuKikyo}  Externe (${s.gaikaku}) : ${s.gaikakuKikyo}  Total (${s.sokaku}) : ${s.sokakuKikyo}`:''; const instr={general:"Fournissez une lecture holistique intégrant toutes les traditions y compris la numérologie du nom — révélez la mission essentielle, le caractère, les talents et les orientations de vie.",today:`Lisez la fortune du jour (${today}). En tenant compte de la numérologie du nom, couvrez l\u2019amour, le travail, la santé et les finances.`,week:"Lisez la fortune de cette semaine. En tenant compte de la numérologie du nom, décrivez le flux de la semaine, les jours fastes et les conseils en amour, travail et santé.",month:"Lisez la fortune de ce mois. En tenant compte de la numérologie du nom, décrivez le flux général, les tournants importants et les conseils en amour, travail, santé et finances.",year:"Lisez la fortune de cette année. En tenant compte de la numérologie du nom, décrivez le flux annuel, les périodes importantes et les conseils en amour, travail, santé et finances."}; const bt=d.bt||"Inconnue"; const gv=gl[d.gender]||"Non précisé"; const qv=d.q?"Question : "+d.q:""; return `Veuillez effectuer une lecture pour :\n\nNom : ${d.name}${seimeiText}\nDate de naissance : ${d.bd} (né(e) en ${d.year})\nHeure de naissance : ${bt}\nGenre : ${gv}\nSigne : ${d.zodiac}\nÉtoile Kyusei : ${d.kyusei}\nPilier de l\u2019année : ${d.shichu}\nChemin de vie : ${d.lp}\n${qv}\n\n${instr[d.type]}`; }
   }
 };
 
@@ -386,13 +397,15 @@ function setLang(lang) {
 
   document.getElementById('appTitle').textContent = t.appTitle;
   document.getElementById('appSubtitle').textContent = t.appSubtitle;
-  document.getElementById('lName').textContent = t.lName;
+  document.getElementById('lLastName').textContent = t.lLastName;
+  document.getElementById('lFirstName').textContent = t.lFirstName;
   document.getElementById('lBirth').textContent = t.lBirth;
   document.getElementById('lTime').textContent = t.lTime;
   document.getElementById('lGender').textContent = t.lGender;
   document.getElementById('lQuestion').textContent = t.lQuestion;
   document.getElementById('lTypeSelect').textContent = t.lTypeSelect;
-  document.getElementById('name').placeholder = t.namePH;
+  document.getElementById('lastName').placeholder = t.lastNamePH || '';
+  document.getElementById('firstName').placeholder = t.firstNamePH || '';
   document.getElementById('question').placeholder = t.questionPH;
   document.getElementById('invokeBtn').textContent = t.invokeBtn;
   document.getElementById('loadingText').textContent = t.loadingText;
@@ -461,12 +474,65 @@ function getShichu(dateStr) {
 }
 
 // ══════════════════════════════════════════
-// Oracle — Gemini API
+// 姓名判断
 // ══════════════════════════════════════════
+function getStrokeCount(char) {
+  // 主要な漢字の画数テーブル
+  const strokes = {
+    '一':1,'乙':1,'二':2,'人':2,'入':2,'八':2,'力':2,'十':2,'又':2,
+    '三':3,'山':3,'川':3,'土':3,'大':3,'女':3,'子':3,'小':3,'千':3,'口':3,'上':3,'下':3,
+    '四':5,'中':4,'五':4,'今':4,'元':4,'内':4,'公':4,'分':4,'切':4,'天':4,'太':4,'手':4,'文':4,'月':4,'木':4,'水':4,'火':4,'牛':4,'犬':4,'王':4,'心':4,'日':4,
+    '世':5,'主':5,'以':5,'仙':5,'北':5,'古':5,'右':5,'司':5,'四':5,'外':5,'左':5,'市':5,'本':5,'正':5,'民':5,'生':5,'用':5,'由':5,'白':5,'皮':5,'目':5,'石':5,'立':5,'令':5,'冬':5,'出':5,'加':5,'功':5,'包':5,'半':5,'占':5,'去':5,'台':5,'史':5,'央':5,'平':5,'弘':5,'必':5,
+    '全':6,'共':6,'光':6,'先':6,'名':6,'因':6,'地':6,'好':6,'安':6,'守':6,'年':6,'早':6,'有':6,'次':6,'羊':6,'老':6,'色':6,'西':6,'伊':6,'伍':6,'伝':6,'任':6,'吉':6,'各':6,'合':6,'回':6,'多':6,'成':6,'朱':6,'江':6,'池':6,'米':6,'糸':6,'羽':6,'衣':6,'行':6,'竹':6,
+    '努':7,'初':7,'助':7,'労':7,'吾':7,'寿':7,'希':7,'形':7,'李':7,'村':7,'杉':7,'来':7,'束':7,'男':7,'町':7,'花':7,'見':7,'足':7,'里':7,'君':7,'孝':7,'快':7,'我':7,'改':7,'更':7,'材':7,'沙':7,'沢':7,'状':7,'決':7,'牡':7,'芳':7,'豆':7,
+    '京':8,'典':8,'其':8,'具':8,'典':8,'函':8,'制':8,'刷':8,'和':8,'周':8,'命':8,'固':8,'国':8,'奈':8,'奉':8,'季':8,'宗':8,'宙':8,'実':8,'岡':8,'岸':8,'幸':8,'店':8,'弦':8,'往':8,'明':8,'林':8,'果':8,'枝':8,'武':8,'河':8,'法':8,'泉':8,'知':8,'空':8,'花':8,'英':8,'表':8,'金':8,'長':8,'門':8,'雨':8,'青':8,'非':8,
+    '信':9,'保':9,'俊':9,'南':9,'厚':9,'品':9,'型':9,'城':9,'室':9,'客':9,'宣':9,'春':9,'昭':9,'柳':9,'泰':9,'洋':9,'津':9,'活':9,'為':9,'界':9,'畑':9,'発':9,'皆':9,'相':9,'美':9,'耐':9,'茂':9,'風':9,'食':9,'香':9,'勇':9,'勉':9,'前':9,'則':9,'便':9,
+    '倫':10,'原':10,'哲':10,'夏':10,'家':10,'宮':10,'恵':10,'桐':10,'根':10,'格':10,'桜':10,'海':10,'特':10,'真':10,'笑':10,'紘':10,'純':10,'素':10,'記':10,'高':10,'竜':10,'航':10,'訓':10,'財':10,'起':10,'郎':10,'都':10,'馬':10,'島':10,'峰':10,'峻':10,'倉':10,'兼':10,'剛':10,'唐':10,'宰':10,'展':10,'師':10,'恋':10,'時':10,'泰':10,
+    '健':11,'博':11,'基':11,'婦':11,'崎':11,'常':11,'情':11,'推':11,'淳':11,'清':11,'理':11,'略':11,'章':11,'第':11,'紺':11,'細':11,'菊':11,'陸':11,'鹿':11,'亀':11,'偉':11,'副':11,'動':11,'匙':11,'参':11,'商':11,'堂':11,'国':11,'望':11,'梅':11,'現':11,'球':11,'産':11,'統':11,'翌':11,'習':11,'野':11,
+    '勝':12,'博':12,'喜':12,'善':12,'奥':12,'富':12,'幾':12,'幹':12,'普':12,'晴':12,'景':12,'智':12,'朝':12,'森':12,'港':12,'湖':12,'無':12,'琴':12,'登':12,'短':12,'絵':12,'統':12,'葉':12,'達':12,'隆':12,'雄':12,'雅':12,'黄':12,
+    '愛':13,'新':13,'源':13,'照':13,'義':13,'聖':13,'誠':13,'路':13,'園':13,'楠':13,'歳':13,'滋':13,'煌':13,'瑞':13,'睦':13,'碧':13,'節':13,'継':13,'資':13,'農':13,'道':13,
+    '樹':16,'静':14,'精':14,'綾':14,'緑':14,'維':14,'徳':14,'銀':14,'関':14,'慶':15,'樫':15,'確':15,'穂':15,'賢':15,'輝':15,'霞':15,'龍':16,'頼':16,'澄':15,'憲':16,'錦':16,'薫':16,'優':17,'藤':18,'藍':18,'瀬':19,'露':21,
+  };
+  return strokes[char] || 10; // 不明な文字は10画とする
+}
+
+function getSeimei(lastName, firstName) {
+  // 各格の計算
+  const lastStrokes = lastName.split('').reduce((sum, c) => sum + getStrokeCount(c), 0);
+  const firstStrokes = firstName.split('').reduce((sum, c) => sum + getStrokeCount(c), 0);
+
+  const tenkaku = lastStrokes;           // 天格（姓の総画）
+  const chikaku = firstStrokes;          // 地格（名の総画）
+  const jinkaku = lastStrokes + firstStrokes; // 人格（姓の末尾+名の先頭 ※簡略化）
+  const gaikaku = (lastStrokes + firstStrokes + 1); // 外格（簡略計算）
+  const sokaku = lastStrokes + firstStrokes; // 総格
+
+  // 吉凶判定（簡易）
+  function getKikyo(n) {
+    const num = n % 81 || 81;
+    const kichi = [1,3,5,6,7,8,11,13,15,16,17,18,21,23,24,25,29,31,32,33,35,37,38,39,41,45,47,48,52,57,58,61,63,65,67,68,81];
+    return kichi.includes(num) ? '吉' : '凶';
+  }
+
+  return {
+    lastName, firstName,
+    lastStrokes, firstStrokes,
+    tenkaku, chikaku, jinkaku, gaikaku, sokaku,
+    tenkakuKikyo: getKikyo(tenkaku),
+    chikakuKikyo: getKikyo(chikaku),
+    jinkakuKikyo: getKikyo(jinkaku),
+    gaikakuKikyo: getKikyo(gaikaku),
+    sokakuKikyo: getKikyo(sokaku),
+  };
+}
+
+
 async function invokeFortune() {
   const t = I18N[currentLang];
   const apiKey = document.getElementById('apiKey').value.trim();
-  const name = document.getElementById('name').value.trim();
+  const lastName = document.getElementById('lastName').value.trim();
+  const firstName = document.getElementById('firstName').value.trim();
+  const name = lastName + ' ' + firstName;
   const bd = document.getElementById('birthdate').value;
   const bt = document.getElementById('birthtime').value;
   const gender = document.getElementById('gender').value;
@@ -476,12 +542,13 @@ async function invokeFortune() {
   errEl.className = 'error-msg';
 
   if (!apiKey) { showError(t.errApiKey); return; }
-  if (!name) { showError(t.errName); return; }
+  if (!lastName && !firstName) { showError(t.errName); return; }
   if (!bd) { showError(t.errBirth); return; }
 
   saveFormData();
 
-  const pdata = { name, bd, bt, gender, q, type, zodiac:getZodiac(bd), kyusei:getKyusei(bd), shichu:getShichu(bd), lp:getLifeNum(bd), year:new Date(bd).getFullYear(), today:new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'}) };
+  const seimei = getSeimei(lastName, firstName);
+  const pdata = { name: name.trim(), lastName, firstName, seimei, bd, bt, gender, q, type, zodiac:getZodiac(bd), kyusei:getKyusei(bd), shichu:getShichu(bd), lp:getLifeNum(bd), year:new Date(bd).getFullYear(), today:new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'}) };
 
   document.getElementById('formSection').style.display = 'none';
   document.getElementById('loadingVeil').className = 'loading-veil show';
@@ -560,7 +627,8 @@ function loadFormData() {
     if (!saved) return;
     const data = JSON.parse(saved);
     if (data.apiKey) document.getElementById('apiKey').value = data.apiKey;
-    if (data.name) document.getElementById('name').value = data.name;
+    if (data.lastName) document.getElementById('lastName').value = data.lastName;
+    if (data.firstName) document.getElementById('firstName').value = data.firstName;
     if (data.birthdate) document.getElementById('birthdate').value = data.birthdate;
     if (data.birthtime) document.getElementById('birthtime').value = data.birthtime;
     if (data.gender) document.getElementById('gender').value = data.gender;
