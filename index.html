@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宿命の鏡 — 究極占術</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Serif+JP:wght@200;300;400&family=Noto+Serif+SC:wght@200;300&family=Noto+Serif+KR:wght@200;300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #040408; --deep: #08080f; --ink: #0d0d1a;
+    --gold: #c9a84c; --gold-dim: #7a6230; --gold-bright: #f0d080;
+    --silver: #a0a8c0; --mist: #1a1a2e; --crimson: #8b1a2a;
+    --amethyst: #4a2060; --teal: #0d3040;
+    --text: #d8ceb8; --text-dim: #7a7060;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--void); color: var(--text);
+    font-family: 'Noto Serif JP', serif; font-weight: 200;
+    min-height: 100vh; overflow-x: hidden; cursor: crosshair;
+  }
+
+  /* ── Night Sky Canvas ── */
+  #skyCanvas {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    width: 100%; height: 100%;
+  }
+
+  /* ── Language Bar ── */
+  .lang-bar {
+    position: fixed; top: 0; right: 0; left: 0; z-index: 100;
+    display: flex; justify-content: center; align-items: center;
+    padding: 8px 16px; gap: 2px; flex-wrap: nowrap; overflow-x: auto;
+    background: linear-gradient(to bottom, rgba(4,4,8,0.92) 0%, transparent 100%);
+    scrollbar-width: none;
+  }
+  .lang-bar::-webkit-scrollbar { display: none; }
+  .lang-btn {
+    display: flex; align-items: center; gap: 5px;
+    padding: 5px 10px; background: transparent;
+    border: 1px solid transparent; border-radius: 2px;
+    color: var(--text-dim); font-family: inherit; font-size: 0.68rem;
+    letter-spacing: 0.04em; cursor: pointer; transition: all 0.25s; white-space: nowrap;
+  }
+  .lang-btn .flag { font-size: 0.95rem; line-height: 1; }
+  .lang-btn:hover { color: var(--text); border-color: rgba(201,168,76,0.2); }
+  .lang-btn.active { color: var(--gold); border-color: rgba(201,168,76,0.35); background: rgba(201,168,76,0.06); }
+
+  /* ── Layout ── */
+  .wrap { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 0 24px; }
+
+  /* ── Header ── */
+  header { text-align: center; padding: 100px 0 60px; }
+  .sigil { width: 80px; height: 80px; margin: 0 auto 32px; position: relative; }
+  .sigil svg { width: 100%; height: 100%; animation: rotate-slow 20s linear infinite; }
+  .sigil::after {
+    content: ''; position: absolute; inset: -12px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(201,168,76,0.2) 0%, transparent 70%);
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+  @keyframes rotate-slow { to { transform: rotate(360deg); } }
+  @keyframes pulse-glow { 0%,100%{opacity:0.4;transform:scale(1)} 50%{opacity:1;transform:scale(1.15)} }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 300;
+    letter-spacing: 0.15em; color: var(--gold);
+    text-shadow: 0 0 40px rgba(201,168,76,0.4); line-height: 1.2;
+  }
+  .subtitle { margin-top: 12px; font-size: 0.75rem; letter-spacing: 0.3em; color: var(--text-dim); }
+
+  /* ── Divider ── */
+  .divider { display: flex; align-items: center; gap: 16px; margin: 40px 0; color: var(--gold-dim); }
+  .divider::before, .divider::after { content:''; flex:1; height:1px; background: linear-gradient(to right, transparent, var(--gold-dim), transparent); }
+  .divider span { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; }
+
+  /* ── Form ── */
+  .oracle-form {
+    background: linear-gradient(135deg, rgba(13,13,26,0.95) 0%, rgba(26,26,46,0.8) 100%);
+    border: 1px solid rgba(201,168,76,0.2); border-radius: 2px; padding: 40px;
+    box-shadow: 0 0 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(201,168,76,0.1);
+    position: relative; overflow: hidden;
+  }
+  .oracle-form::before { content:''; position:absolute; inset:0; background: radial-gradient(ellipse at 50% -10%, rgba(201,168,76,0.06) 0%, transparent 60%); pointer-events:none; }
+  .corner { position:absolute; width:20px; height:20px; border-color:var(--gold-dim); border-style:solid; opacity:0.5; }
+  .corner.tl{top:12px;left:12px;border-width:1px 0 0 1px} .corner.tr{top:12px;right:12px;border-width:1px 1px 0 0}
+  .corner.bl{bottom:12px;left:12px;border-width:0 0 1px 1px} .corner.br{bottom:12px;right:12px;border-width:0 1px 1px 0}
+
+  .field-group { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
+  @media(max-width:500px){ .field-group{grid-template-columns:1fr} }
+  .field { display:flex; flex-direction:column; gap:8px; }
+  .field.full { grid-column: 1 / -1; }
+  label { font-size:0.65rem; letter-spacing:0.35em; color:var(--gold-dim); text-transform:uppercase; }
+  input, select, textarea {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(201,168,76,0.15);
+    border-radius:1px; color:var(--text); font-family:inherit; font-size:0.9rem; font-weight:200;
+    padding:10px 14px; transition:border-color .3s,box-shadow .3s,background .3s; outline:none; width:100%;
+  }
+  input::placeholder { color:var(--text-dim); }
+  select option { background:var(--ink); }
+  input:focus, select:focus, textarea:focus { border-color:rgba(201,168,76,0.5); background:rgba(201,168,76,0.04); box-shadow:0 0 20px rgba(201,168,76,0.08); }
+
+  .fortune-types { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:28px; }
+  .type-btn {
+    flex:1; min-width:110px; padding:10px 12px; background:transparent;
+    border:1px solid rgba(201,168,76,0.2); border-radius:1px; color:var(--text-dim);
+    font-family:inherit; font-size:0.8rem; cursor:pointer; transition:all .3s; letter-spacing:0.06em; text-align:center;
+  }
+  .type-btn:hover { border-color:var(--gold-dim); color:var(--text); }
+  .type-btn.active { background:rgba(201,168,76,0.1); border-color:var(--gold); color:var(--gold); box-shadow:0 0 15px rgba(201,168,76,0.1); }
+
+  .invoke-btn {
+    width:100%; padding:16px 32px;
+    background:linear-gradient(135deg,rgba(201,168,76,0.15) 0%,rgba(201,168,76,0.05) 100%);
+    border:1px solid rgba(201,168,76,0.4); border-radius:1px;
+    color:var(--gold); font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:300;
+    letter-spacing:0.3em; cursor:pointer; transition:all .4s; position:relative; overflow:hidden; text-transform:uppercase;
+  }
+  .invoke-btn::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(201,168,76,0.2) 0%,transparent 100%); opacity:0; transition:opacity .4s; }
+  .invoke-btn:hover::before { opacity:1; }
+  .invoke-btn:hover { border-color:var(--gold); box-shadow:0 0 30px rgba(201,168,76,0.2),inset 0 0 20px rgba(201,168,76,0.05); transform:translateY(-1px); }
+  .invoke-btn:active { transform:translateY(0); }
+
+  /* ── Loading ── */
+  .loading-veil { display:none; text-align:center; padding:60px 0; }
+  .loading-veil.show { display:block; }
+  .orb { width:60px; height:60px; margin:0 auto 24px; border-radius:50%; background:radial-gradient(circle at 35% 35%,rgba(201,168,76,0.8),rgba(74,32,96,0.4)); box-shadow:0 0 40px rgba(201,168,76,0.3); animation:orb-spin 2s ease-in-out infinite; }
+  @keyframes orb-spin { 0%,100%{transform:scale(1);box-shadow:0 0 40px rgba(201,168,76,0.3)} 50%{transform:scale(1.2);box-shadow:0 0 60px rgba(201,168,76,0.5),0 0 100px rgba(74,32,96,0.3)} }
+  .loading-text { font-size:0.7rem; letter-spacing:0.4em; color:var(--text-dim); text-transform:uppercase; animation:fade-text 1.5s ease-in-out infinite; }
+  @keyframes fade-text { 0%,100%{opacity:0.3} 50%{opacity:0.9} }
+
+  /* ── Result ── */
+  .result-scroll { display:none; background:linear-gradient(160deg,rgba(13,13,26,0.98) 0%,rgba(8,8,15,0.99) 100%); border:1px solid rgba(201,168,76,0.25); border-radius:2px; padding:48px 40px; margin-top:32px; position:relative; box-shadow:0 0 80px rgba(0,0,0,0.9),0 0 40px rgba(201,168,76,0.05); animation:scroll-reveal 0.8s cubic-bezier(0.16,1,0.3,1) forwards; }
+  .result-scroll.show { display:block; }
+  @keyframes scroll-reveal { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .result-header { text-align:center; margin-bottom:36px; }
+  .result-name { font-family:'Cormorant Garamond',serif; font-size:1.6rem; font-weight:300; color:var(--gold); letter-spacing:0.1em; }
+  .result-meta { font-size:0.65rem; letter-spacing:0.25em; color:var(--text-dim); margin-top:6px; }
+  .fortune-text { font-size:0.95rem; line-height:2.2; color:var(--text); letter-spacing:0.05em; white-space:pre-wrap; font-weight:200; }
+  .fortune-text::first-letter { font-family:'Cormorant Garamond',serif; font-size:3.5rem; font-weight:300; color:var(--gold); float:left; line-height:0.75; margin-right:8px; margin-top:8px; }
+  .type-indicator { display:inline-block; padding:4px 12px; border:1px solid rgba(201,168,76,0.3); font-size:0.6rem; letter-spacing:0.3em; color:var(--gold-dim); text-transform:uppercase; margin-bottom:20px; }
+  .reset-btn { margin-top:40px; display:block; width:100%; padding:12px; background:transparent; border:1px solid rgba(201,168,76,0.1); color:var(--text-dim); font-family:inherit; font-size:0.7rem; letter-spacing:0.3em; cursor:pointer; transition:all .3s; text-transform:uppercase; }
+  .reset-btn:hover { border-color:rgba(201,168,76,0.3); color:var(--gold-dim); }
+
+  /* ── Error ── */
+  .error-msg { display:none; text-align:center; padding:24px; border:1px solid rgba(139,26,42,0.4); background:rgba(139,26,42,0.05); color:#c07080; font-size:0.85rem; margin-top:20px; }
+  .error-msg.show { display:block; }
+
+  footer { text-align:center; padding:60px 0 40px; font-size:0.6rem; letter-spacing:0.25em; color:var(--text-dim); }
+  .star-trail { position:fixed; width:4px; height:4px; border-radius:50%; pointer-events:none; z-index:9999; animation:trail-fade 0.6s ease-out forwards; }
+  @keyframes trail-fade { from{opacity:0.8;transform:scale(1)} to{opacity:0;transform:scale(0)} }
+</style>
+</head>
+<body>
+<canvas id="skyCanvas"></canvas>
+
+<div class="lang-bar" id="langBar">
+  <button class="lang-btn active" onclick="setLang('ja')" data-lang="ja"><span class="flag">🇯🇵</span> 日本語</button>
+  <button class="lang-btn" onclick="setLang('en')" data-lang="en"><span class="flag">🇺🇸</span> English</button>
+  <button class="lang-btn" onclick="setLang('zh')" data-lang="zh"><span class="flag">🇨🇳</span> 中文</button>
+  <button class="lang-btn" onclick="setLang('ko')" data-lang="ko"><span class="flag">🇰🇷</span> 한국어</button>
+  <button class="lang-btn" onclick="setLang('fr')" data-lang="fr"><span class="flag">🇫🇷</span> Français</button>
+</div>
+
+<div class="wrap">
+  <header>
+    <div class="sigil">
+      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="38" stroke="#c9a84c" stroke-width="0.5" opacity="0.6"/>
+        <circle cx="40" cy="40" r="28" stroke="#c9a84c" stroke-width="0.3" opacity="0.4"/>
+        <polygon points="40,8 46.9,29.5 69.6,29.5 52.4,46.5 59.3,68 40,55 20.7,68 27.6,46.5 10.4,29.5 33.1,29.5" fill="none" stroke="#c9a84c" stroke-width="0.7" opacity="0.7"/>
+        <circle cx="40" cy="40" r="5" fill="rgba(201,168,76,0.3)" stroke="#c9a84c" stroke-width="0.5"/>
+        <line x1="40" y1="2" x2="40" y2="10" stroke="#c9a84c" stroke-width="0.5" opacity="0.5"/>
+        <line x1="40" y1="70" x2="40" y2="78" stroke="#c9a84c" stroke-width="0.5" opacity="0.5"/>
+        <line x1="2" y1="40" x2="10" y2="40" stroke="#c9a84c" stroke-width="0.5" opacity="0.5"/>
+        <line x1="70" y1="40" x2="78" y2="40" stroke="#c9a84c" stroke-width="0.5" opacity="0.5"/>
+      </svg>
+    </div>
+    <h1 id="appTitle">宿命の鏡</h1>
+    <p class="subtitle" id="appSubtitle">The Mirror of Fate · 究極占術</p>
+  </header>
+
+  <div class="divider"><span>✦</span></div>
+
+  <div class="oracle-form" id="formSection">
+    <div class="corner tl"></div><div class="corner tr"></div>
+    <div class="corner bl"></div><div class="corner br"></div>
+
+    <!-- API Key input -->
+    <div class="apikey-wrap" id="apikeyWrap">
+      <div class="field" style="margin-bottom:24px">
+        <label id="lApiKey">Gemini APIキー</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="password" id="apiKey" placeholder="AIza..." style="flex:1">
+          <button onclick="toggleApiKeyVisibility()" id="toggleBtn" style="padding:10px 14px;background:transparent;border:1px solid rgba(201,168,76,0.2);color:var(--text-dim);font-size:0.75rem;cursor:pointer;white-space:nowrap;transition:all .3s" onmouseover="this.style.borderColor='rgba(201,168,76,0.5)'" onmouseout="this.style.borderColor='rgba(201,168,76,0.2)'">表示</button>
+        </div>
+        <p id="apikeyNote" style="font-size:0.62rem;color:var(--text-dim);margin-top:6px;letter-spacing:0.05em;line-height:1.8"></p>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field"><label id="lName"></label><input type="text" id="name" placeholder=""></div>
+      <div class="field"><label id="lBirth"></label><input type="date" id="birthdate"></div>
+      <div class="field"><label id="lTime"></label><input type="time" id="birthtime"></div>
+      <div class="field">
+        <label id="lGender"></label>
+        <select id="gender">
+          <option value="" id="gOpt0"></option>
+          <option value="female" id="gOpt1"></option>
+          <option value="male" id="gOpt2"></option>
+          <option value="other" id="gOpt3"></option>
+        </select>
+      </div>
+      <div class="field full"><label id="lQuestion"></label><textarea id="question" rows="3" style="resize:vertical"></textarea></div>
+    </div>
+    <label id="lTypeSelect" style="display:block;margin-bottom:12px"></label>
+    <div class="fortune-types" id="typeSelector">
+      <button class="type-btn active" data-type="general">✦ <span class="tlbl" data-key="t_general"></span></button>
+      <button class="type-btn" data-type="today">☀ <span class="tlbl" data-key="t_today"></span></button>
+      <button class="type-btn" data-type="week">🌙 <span class="tlbl" data-key="t_week"></span></button>
+      <button class="type-btn" data-type="month">🌕 <span class="tlbl" data-key="t_month"></span></button>
+      <button class="type-btn" data-type="year">⭐ <span class="tlbl" data-key="t_year"></span></button>
+    </div>
+    <button class="invoke-btn" id="invokeBtn" onclick="invokeFortune()"></button>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <div class="loading-veil" id="loadingVeil">
+    <div class="orb"></div>
+    <p class="loading-text" id="loadingText"></p>
+  </div>
+
+  <div class="result-scroll" id="resultScroll">
+    <div class="result-header">
+      <div id="resultTypeIndicator" class="type-indicator"></div>
+      <div class="result-name" id="resultName"></div>
+      <div class="result-meta" id="resultMeta"></div>
+    </div>
+    <div class="divider"><span>◈</span></div>
+    <div class="fortune-text" id="fortuneText"></div>
+    <button class="reset-btn" id="resetBtn" onclick="resetForm()"></button>
+  </div>
+
+  <footer><p id="footerText"></p></footer>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// i18n
+// ══════════════════════════════════════════
+const I18N = {
+  ja: {
+    lang:'ja', appTitle:'宿命の鏡', appSubtitle:'The Mirror of Fate · 究極占術',
+    lName:'お名前', lBirth:'生年月日', lTime:'出生時刻（任意）', lGender:'性別',
+    lQuestion:'今の悩み・聞きたいこと（任意）', lTypeSelect:'占術を選択',
+    namePH:'例：山田 花子', questionPH:'例：仕事のこと、恋愛のこと、今後の人生について…',
+    gOpt0:'選択してください', gOpt1:'女性', gOpt2:'男性', gOpt3:'その他',
+    t_general:'総合鑑定', t_today:'今日の運勢', t_week:'今週の運勢', t_month:'今月の運勢', t_year:'今年の運勢',
+    invokeBtn:'天命を読み解く', loadingText:'天の理を読み解いています…',
+    resetBtn:'▸ 新たな問いを立てる', footerText:'宿命の鏡 · 究極占術<br>占いは参考程度にお楽しみください',
+    errName:'お名前をご入力ください', errBirth:'生年月日をご入力ください',
+    errAPI:'天の声を受信できませんでした。しばらくしてから再度お試しください。',
+    errApiKey:'Gemini APIキーを入力してください',
+    errApiKeyInvalid:'APIキーが無効です。正しいキーをご確認ください。',
+    lApiKey:'Gemini APIキー',
+    apikeyNote:'無料のAPIキーは Google AI Studio（aistudio.google.com）で取得できます。キーはブラウザ内にのみ保存され、外部に送信されません。',
+    toggleShow:'表示', toggleHide:'隠す',
+    honorific:' 様', lpLabel:'ライフパス',
+    typeLabels:{ general:'総合霊的鑑定', today:'今日の運勢鑑定', week:'今週の運勢鑑定', month:'今月の運勢鑑定', year:'今年の運勢鑑定' },
+    system:`あなたは数千年の叡智を持つ神秘の占い師です。東洋と西洋の占術を融合させた深遠な鑑定を行います。言葉は古典的で格調高く、時に詩的な表現を使いながらも、具体的で実践的なアドバイスを織り交ぜてください。回答は必ず日本語で、700〜1000文字程度の本格的な鑑定文を書いてください。段落で区切り、余計な記号や見出しは使わず連続した文章で書いてください。`,
+    buildUser(d){ const gl={female:'女性',male:'男性',other:'その他','':'未回答'}; const today=d.today; const instr={general:'四柱推命・九星気学・数秘術・星座占いを統合した総合鑑定をお願いします。この方の本質的な使命、性格、才能、今後の人生における指針を詳しく示してください。',today:`本日（${today}）の運勢を鑑定してください。恋愛・仕事・健康・金運の観点から、今日一日の流れと心がけるべきことをお伝えください。`,week:'今週（7日間）の運勢を鑑定してください。週の前半・後半の流れ、チャンスが訪れる日、注意すべき日、恋愛・仕事・健康の運勢をお伝えください。',month:'今月の運勢を鑑定してください。月全体の大きな流れ、重要な転機となる時期、恋愛・仕事・健康・金運の運勢をお伝えください。',year:'今年の運勢を鑑定してください。年間を通じた大きな流れ、特に重要な時期、恋愛・仕事・健康・金運の年間運勢と、今年の指針をお伝えください。'}; return `以下の方の鑑定をお願いします。\n\n【鑑定対象】\nお名前：${d.name}\n生年月日：${d.bd}（${d.year}年）\n出生時刻：${d.bt||'不明'}\n性別：${gl[d.gender]||'未回答'}\n星座：${d.zodiac}\n九星気学：${d.kyusei}\n四柱（年柱）：${d.shichu}\nライフパスナンバー：${d.lp}\n${d.q?'ご相談内容：'+d.q:''}\n\n${instr[d.type]}`; }
+  },
+  en: {
+    lang:'en', appTitle:'Mirror of Fate', appSubtitle:'Ancient Wisdom · Ultimate Oracle',
+    lName:'Your Name', lBirth:'Date of Birth', lTime:'Birth Time (optional)', lGender:'Gender',
+    lQuestion:'Your Question (optional)', lTypeSelect:'Choose Divination',
+    namePH:'e.g. Jane Smith', questionPH:'e.g. Love, career, life path…',
+    gOpt0:'Please select', gOpt1:'Female', gOpt2:'Male', gOpt3:'Other',
+    t_general:'Full Reading', t_today:"Today's Fortune", t_week:"This Week's Fortune", t_month:"This Month's Fortune", t_year:"This Year's Fortune",
+    invokeBtn:'Reveal My Destiny', loadingText:'Consulting the cosmic archives…',
+    resetBtn:'▸ Ask a New Question', footerText:'Mirror of Fate · Ancient Oracle<br>For entertainment purposes only',
+    errName:'Please enter your name', errBirth:'Please enter your date of birth',
+    errAPI:'Could not receive the celestial message. Please try again.',
+    errApiKey:'Please enter your Gemini API key',
+    errApiKeyInvalid:'Invalid API key. Please check your key.',
+    lApiKey:'Gemini API Key',
+    apikeyNote:'Get a free API key at Google AI Studio (aistudio.google.com). Your key is stored only in your browser and never sent anywhere else.',
+    toggleShow:'Show', toggleHide:'Hide',
+    honorific:'', lpLabel:'Life Path',
+    typeLabels:{ general:'Full Spiritual Reading', today:"Today's Fortune", week:"This Week's Fortune", month:"This Month's Fortune", year:"This Year's Fortune" },
+    system:`You are a mystical oracle with millennia of wisdom, blending Eastern and Western divination. Write in an elevated, slightly archaic, and poetic style, weaving in practical guidance. Respond exclusively in English with a 400–600 word reading. Use flowing paragraphs — no headers, bullets, or symbols.`,
+    buildUser(d){ const gl={female:'Female',male:'Male',other:'Other','':'Unspecified'}; const today=d.today; const instr={general:"Provide a holistic reading integrating all divination traditions — reveal this person's core mission, character, talents, and life guidance.",today:`Read the fortune for today (${today}). Cover love, work, health, and finances — describe today's energy and key guidance.`,week:"Read the fortune for this week (7 days). Describe the energy of the early and later half of the week, lucky days, days to be cautious, and guidance for love, work, and health.",month:"Read the fortune for this month. Describe the overall flow, key turning points, and guidance for love, work, health, and finances.",year:"Read the fortune for this year. Describe the annual flow, most important periods, and guidance for love, work, health, and finances."}; return `Please provide a reading for:\n\nName: ${d.name}\nBirth Date: ${d.bd} (born ${d.year})\nBirth Time: ${d.bt||'Unknown'}\nGender: ${gl[d.gender]||'Unspecified'}\nZodiac: ${d.zodiac}\nKyusei Star: ${d.kyusei}\nYear Pillar: ${d.shichu}\nLife Path: ${d.lp}\n${d.q?'Question: '+d.q:''}\n\n${instr[d.type]}`; }
+  },
+  zh: {
+    lang:'zh', appTitle:'命运之镜', appSubtitle:'天命占術 · 东西方智慧的结晶',
+    lName:'姓名', lBirth:'出生日期', lTime:'出生时间（可选）', lGender:'性别',
+    lQuestion:'您的问题（可选）', lTypeSelect:'选择占术',
+    namePH:'例：张三', questionPH:'例：关于感情、事业、未来方向…',
+    gOpt0:'请选择', gOpt1:'女性', gOpt2:'男性', gOpt3:'其他',
+    t_general:'综合鉴定', t_today:'今日运势', t_week:'本周运势', t_month:'本月运势', t_year:'今年运势',
+    invokeBtn:'揭示天命', loadingText:'正在解读天机…',
+    resetBtn:'▸ 提出新的问题', footerText:'命运之镜 · 天命占術<br>仅供娱乐参考',
+    errName:'请输入您的姓名', errBirth:'请输入您的出生日期',
+    errAPI:'无法接收天机信息，请稍后再试。',
+    errApiKey:'请输入您的 Gemini API 密钥',
+    errApiKeyInvalid:'API 密钥无效，请确认后重试。',
+    lApiKey:'Gemini API 密钥',
+    apikeyNote:'免费的 API 密钥可在 Google AI Studio（aistudio.google.com）获取。密钥仅保存在您的浏览器中，不会发送到其他地方。',
+    toggleShow:'显示', toggleHide:'隐藏',
+    honorific:' 先生/女士', lpLabel:'生命路径数',
+    typeLabels:{ general:'综合灵性鉴定', today:'今日运势鉴定', week:'本周运势鉴定', month:'本月运势鉴定', year:'今年运势鉴定' },
+    system:`你是一位拥有数千年智慧的神秘占卜师，融合东西方占术进行深邃鉴定。语言典雅古朴富有诗意，同时穿插实用建议。请用中文回答，700至1000字，段落分隔，不使用标题或项目符号，写成连贯文章。`,
+    buildUser(d){ const gl={female:'女性',male:'男性',other:'其他','':'未填写'}; const today=d.today; const instr={general:'综合四柱推命、九星气学、数秘术和星座占卜，揭示此人的核心使命、性格、才能与人生指引。',today:`鉴定今日（${today}）的运势，涵盖感情、事业、健康、财运，说明今日的能量流向与注意事项。`,week:'鉴定本周（7天）运势，说明上半周与下半周的走势、吉日与需注意的日子，以及感情、事业、健康的运势。',month:'鉴定本月运势，说明整体走势、重要转折时机，以及感情、事业、健康、财运的月度运势。',year:'鉴定今年运势，说明全年大势、最重要的时期，以及感情、事业、健康、财运的年度运势与指引。'}; return `请为以下人士进行鉴定：\n\n姓名：${d.name}\n出生日期：${d.bd}（${d.year}年）\n出生时间：${d.bt||'不详'}\n性别：${gl[d.gender]||'未填写'}\n星座：${d.zodiac}\n九星气学：${d.kyusei}\n年柱：${d.shichu}\n生命路径数：${d.lp}\n${d.q?'问题：'+d.q:''}\n\n${instr[d.type]}`; }
+  },
+  ko: {
+    lang:'ko', appTitle:'운명의 거울', appSubtitle:'천명 점술 · 동서양의 지혜',
+    lName:'성명', lBirth:'생년월일', lTime:'출생 시각 (선택)', lGender:'성별',
+    lQuestion:'질문 사항 (선택)', lTypeSelect:'점술 선택',
+    namePH:'예: 김민지', questionPH:'예: 사랑, 직업, 인생 방향에 대해…',
+    gOpt0:'선택하세요', gOpt1:'여성', gOpt2:'남성', gOpt3:'기타',
+    t_general:'종합 감정', t_today:'오늘의 운세', t_week:'이번 주 운세', t_month:'이번 달 운세', t_year:'올해 운세',
+    invokeBtn:'천명을 읽다', loadingText:'천기를 해석하는 중…',
+    resetBtn:'▸ 새 질문하기', footerText:'운명의 거울 · 천명 점술<br>참고용으로만 즐겨주세요',
+    errName:'성명을 입력해 주세요', errBirth:'생년월일을 입력해 주세요',
+    errAPI:'천기를 받지 못했습니다. 잠시 후 다시 시도해 주세요.',
+    errApiKey:'Gemini API 키를 입력해 주세요',
+    errApiKeyInvalid:'API 키가 유효하지 않습니다. 키를 확인해 주세요.',
+    lApiKey:'Gemini API 키',
+    apikeyNote:'무료 API 키는 Google AI Studio(aistudio.google.com)에서 발급받을 수 있습니다. 키는 브라우저에만 저장되며 외부로 전송되지 않습니다.',
+    toggleShow:'표시', toggleHide:'숨기기',
+    honorific:' 님', lpLabel:'라이프패스',
+    typeLabels:{ general:'종합 영적 감정', today:'오늘의 운세 감정', week:'이번 주 운세 감정', month:'이번 달 운세 감정', year:'올해 운세 감정' },
+    system:`당신은 수천 년의 지혜를 가진 신비로운 점술사입니다. 동양과 서양의 점술을 융합하여 심오한 감정을 행합니다. 언어는 고전적이고 격조 있게, 때로 시적인 표현을 사용하면서도 구체적이고 실용적인 조언을 섞어주세요. 반드시 한국어로 답하고, 700~1000자 분량의 본격적인 감정문을 작성해 주세요. 문단으로 나누고, 제목이나 기호 없이 이어지는 문장으로 써주세요.`,
+    buildUser(d){ const gl={female:'여성',male:'남성',other:'기타','':'미입력'}; const today=d.today; const instr={general:'사주추명, 구성기학, 수비술, 별자리 점을 통합하여 이 분의 핵심 사명, 성격, 재능과 인생 지침을 알려주세요.',today:`오늘(${today})의 운세를 감정해 주세요. 사랑, 직업, 건강, 재물 운을 중심으로 오늘의 흐름과 주의사항을 알려주세요.`,week:'이번 주(7일간)의 운세를 감정해 주세요. 주 전반부와 후반부의 흐름, 길일과 주의해야 할 날, 사랑·직업·건강 운세를 알려주세요.',month:'이번 달의 운세를 감정해 주세요. 전체적인 흐름, 중요한 전환점, 사랑·직업·건강·재물 운의 월별 운세를 알려주세요.',year:'올해의 운세를 감정해 주세요. 연간 흐름, 가장 중요한 시기, 사랑·직업·건강·재물 운의 연간 운세와 지침을 알려주세요.'}; return `다음 분의 감정을 해주세요.\n\n이름: ${d.name}\n생년월일: ${d.bd} (${d.year}년생)\n출생 시각: ${d.bt||'불명'}\n성별: ${gl[d.gender]||'미입력'}\n별자리: ${d.zodiac}\n구성기학: ${d.kyusei}\n사주(년주): ${d.shichu}\n라이프패스 넘버: ${d.lp}\n${d.q?'질문: '+d.q:''}\n\n${instr[d.type]}`; }
+  },
+  fr: {
+    lang:'fr', appTitle:'Miroir du Destin', appSubtitle:'Sagesse Ancestrale · Oracle Suprême',
+    lName:'Votre Nom', lBirth:'Date de Naissance', lTime:'Heure de Naissance (optionnel)', lGender:'Genre',
+    lQuestion:'Votre Question (optionnel)', lTypeSelect:'Choisir la Divination',
+    namePH:'ex : Marie Dupont', questionPH:"ex : À propos de l'amour, carrière, avenir…",
+    gOpt0:'Veuillez sélectionner', gOpt1:'Féminin', gOpt2:'Masculin', gOpt3:'Autre',
+    t_general:'Lecture Complète', t_today:"Horoscope du Jour", t_week:"Horoscope de la Semaine", t_month:"Horoscope du Mois", t_year:"Horoscope de l\u2019Année",
+    invokeBtn:'Révéler Mon Destin', loadingText:'Consultation des archives cosmiques…',
+    resetBtn:'▸ Poser une Nouvelle Question', footerText:'Miroir du Destin · Oracle Suprême<br>À titre indicatif seulement',
+    errName:'Veuillez entrer votre nom', errBirth:'Veuillez entrer votre date de naissance',
+    errAPI:'Impossible de recevoir le message céleste. Veuillez réessayer.',
+    errApiKey:'Veuillez entrer votre clé API Gemini',
+    errApiKeyInvalid:'Clé API invalide. Veuillez vérifier votre clé.',
+    lApiKey:'Clé API Gemini',
+    apikeyNote:"Obtenez une clé API gratuite sur Google AI Studio (aistudio.google.com). Votre clé est stockée uniquement dans votre navigateur et n'est envoyée nulle part ailleurs.",
+    toggleShow:'Afficher', toggleHide:'Masquer',
+    honorific:'', lpLabel:'Chemin de Vie',
+    typeLabels:{ general:'Lecture Spirituelle Complète', today:"Horoscope du Jour", week:"Horoscope de la Semaine", month:"Horoscope du Mois", year:"Horoscope de l\u2019Année" },
+    system:`Vous êtes un oracle mystique doté de millénaires de sagesse, fusionnant les divinitations orientale et occidentale. Écrivez dans un style élevé, légèrement archaïque et poétique, en y intégrant des conseils pratiques. Répondez exclusivement en français avec une lecture de 400 à 600 mots. Utilisez des paragraphes fluides — aucun titre, puce ou symbole.`,
+    buildUser(d){ const gl={female:"Féminin",male:"Masculin",other:"Autre","":"Non précisé"}; const today=d.today; const instr={general:"Fournissez une lecture holistique intégrant toutes les traditions — révélez la mission essentielle, le caractère, les talents et les orientations de vie.",today:`Lisez la fortune du jour (${today}). Couvrez l\u2019amour, le travail, la santé et les finances — décrivez l\u2019énergie du jour et les conseils clés.`,week:"Lisez la fortune de cette semaine (7 jours). Décrivez l\u2019énergie de la première et de la seconde moitié, les jours fastes et ceux à surveiller, ainsi que les conseils en amour, travail et santé.",month:"Lisez la fortune de ce mois. Décrivez le flux général, les tournants importants et les conseils en amour, travail, santé et finances.",year:"Lisez la fortune de cette année. Décrivez le flux annuel, les périodes les plus importantes et les conseils en amour, travail, santé et finances."}; const bt=d.bt||"Inconnue"; const gv=gl[d.gender]||"Non précisé"; const qv=d.q?"Question : "+d.q:""; return `Veuillez effectuer une lecture pour :\n\nNom : ${d.name}\nDate de naissance : ${d.bd} (né(e) en ${d.year})\nHeure de naissance : ${bt}\nGenre : ${gv}\nSigne : ${d.zodiac}\nÉtoile Kyusei : ${d.kyusei}\nPilier de l\u2019année : ${d.shichu}\nChemin de vie : ${d.lp}\n${qv}\n\n${instr[d.type]}`; }
+  }
+};
+
+// Zodiac & Kyusei per language
+const ZODIAC = {
+  ja:['山羊座','水瓶座','魚座','牡羊座','牡牛座','双子座','蟹座','獅子座','乙女座','天秤座','蠍座','射手座'],
+  en:['Capricorn','Aquarius','Pisces','Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius'],
+  zh:['摩羯座','水瓶座','双鱼座','白羊座','金牛座','双子座','巨蟹座','狮子座','处女座','天秤座','天蝎座','射手座'],
+  ko:['염소자리','물병자리','물고기자리','양자리','황소자리','쌍둥이자리','게자리','사자자리','처녀자리','천칭자리','전갈자리','사수자리'],
+  fr:['Capricorne','Verseau','Poissons','Bélier','Taureau','Gémeaux','Cancer','Lion','Vierge','Balance','Scorpion','Sagittaire']
+};
+const KYUSEI = {
+  ja:['九紫火星','一白水星','二黒土星','三碧木星','四緑木星','五黄土星','六白金星','七赤金星','八白土星'],
+  en:['9 Purple Fire','1 White Water','2 Black Earth','3 Blue Wood','4 Green Wood','5 Yellow Earth','6 White Metal','7 Red Metal','8 White Earth'],
+  zh:['九紫火星','一白水星','二黑土星','三碧木星','四绿木星','五黄土星','六白金星','七赤金星','八白土星'],
+  ko:['구자화성','일백수성','이흑토성','삼벽목성','사록목성','오황토성','육백금성','칠적금성','팔백토성'],
+  fr:['9 Feu Pourpre','1 Eau Blanche','2 Terre Noire','3 Bois Bleu','4 Bois Vert','5 Terre Jaune','6 Métal Blanc','7 Métal Rouge','8 Terre Blanche']
+};
+
+// ══════════════════════════════════════════
+// Language switch
+// ══════════════════════════════════════════
+let currentLang = 'ja';
+
+function setLang(lang) {
+  currentLang = lang;
+  const t = I18N[lang];
+  document.documentElement.lang = t.lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+
+  document.getElementById('appTitle').textContent = t.appTitle;
+  document.getElementById('appSubtitle').textContent = t.appSubtitle;
+  document.getElementById('lName').textContent = t.lName;
+  document.getElementById('lBirth').textContent = t.lBirth;
+  document.getElementById('lTime').textContent = t.lTime;
+  document.getElementById('lGender').textContent = t.lGender;
+  document.getElementById('lQuestion').textContent = t.lQuestion;
+  document.getElementById('lTypeSelect').textContent = t.lTypeSelect;
+  document.getElementById('name').placeholder = t.namePH;
+  document.getElementById('question').placeholder = t.questionPH;
+  document.getElementById('invokeBtn').textContent = t.invokeBtn;
+  document.getElementById('loadingText').textContent = t.loadingText;
+  document.getElementById('resetBtn').textContent = t.resetBtn;
+  document.getElementById('footerText').innerHTML = t.footerText;
+  ['gOpt0','gOpt1','gOpt2','gOpt3'].forEach(id => { document.getElementById(id).textContent = t[id]; });
+  document.querySelectorAll('.tlbl').forEach(el => { el.textContent = t[el.dataset.key] || ''; });
+  document.getElementById('lApiKey').textContent = t.lApiKey;
+  document.getElementById('apikeyNote').textContent = t.apikeyNote;
+  document.getElementById('toggleBtn').textContent = t.toggleShow;
+  document.title = t.appTitle;
+}
+
+// ══════════════════════════════════════════
+// Type selector
+// ══════════════════════════════════════════
+document.getElementById('typeSelector').addEventListener('click', e => {
+  const btn = e.target.closest('.type-btn');
+  if (!btn) return;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+});
+
+// ══════════════════════════════════════════
+// Star cursor trail
+// ══════════════════════════════════════════
+let trailTimer;
+document.addEventListener('mousemove', e => {
+  clearTimeout(trailTimer);
+  trailTimer = setTimeout(() => {
+    const s = document.createElement('div');
+    s.className = 'star-trail';
+    const c = ['#c9a84c','#a0a8c0','#f0d080','rgba(201,168,76,0.5)'];
+    s.style.cssText = `left:${e.clientX-2}px;top:${e.clientY-2}px;background:${c[Math.floor(Math.random()*c.length)]}`;
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 600);
+  }, 20);
+});
+
+// ══════════════════════════════════════════
+// Helpers
+// ══════════════════════════════════════════
+function getZodiac(dateStr) {
+  const d = new Date(dateStr); const m = d.getMonth()+1, day = d.getDate();
+  const cuts = [[1,20],[2,19],[3,21],[4,20],[5,21],[6,21],[7,23],[8,23],[9,23],[10,23],[11,22],[12,22]];
+  const names = ZODIAC[currentLang]||ZODIAC.en;
+  for (let i=0;i<cuts.length;i++) { const[cm,cd]=cuts[i]; if(m<cm||(m===cm&&day<cd)) return names[i]; }
+  return names[0];
+}
+function getLifeNum(dateStr) {
+  let s = dateStr.replace(/-/g,'').split('').map(Number).reduce((a,b)=>a+b,0);
+  while(s>9&&s!==11&&s!==22) s=String(s).split('').map(Number).reduce((a,b)=>a+b,0);
+  return s;
+}
+function getKyusei(dateStr) {
+  const yr = new Date(dateStr).getFullYear();
+  const stars = KYUSEI[currentLang]||KYUSEI.en;
+  return stars[(9-((yr-1900)%9))%9];
+}
+function getShichu(dateStr) {
+  const yr = new Date(dateStr).getFullYear();
+  const stems=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+  const branches=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+  const suffix = (currentLang==='en'||currentLang==='fr') ? ' Year' : '年';
+  return stems[(yr-4)%10]+branches[(yr-4)%12]+suffix;
+}
+
+// ══════════════════════════════════════════
+// Oracle — Gemini API
+// ══════════════════════════════════════════
+async function invokeFortune() {
+  const t = I18N[currentLang];
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const name = document.getElementById('name').value.trim();
+  const bd = document.getElementById('birthdate').value;
+  const bt = document.getElementById('birthtime').value;
+  const gender = document.getElementById('gender').value;
+  const q = document.getElementById('question').value.trim();
+  const type = document.querySelector('.type-btn.active')?.dataset.type || 'general';
+  const errEl = document.getElementById('errorMsg');
+  errEl.className = 'error-msg';
+
+  if (!apiKey) { showError(t.errApiKey); return; }
+  if (!name) { showError(t.errName); return; }
+  if (!bd) { showError(t.errBirth); return; }
+
+  saveFormData();
+
+  const pdata = { name, bd, bt, gender, q, type, zodiac:getZodiac(bd), kyusei:getKyusei(bd), shichu:getShichu(bd), lp:getLifeNum(bd), year:new Date(bd).getFullYear(), today:new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'}) };
+
+  document.getElementById('formSection').style.display = 'none';
+  document.getElementById('loadingVeil').className = 'loading-veil show';
+  document.getElementById('resultScroll').className = 'result-scroll';
+
+  const prompt = t.system + '\n\n' + t.buildUser(pdata);
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 1200, temperature: 0.85 }
+        })
+      }
+    );
+    const data = await res.json();
+    if (!res.ok) {
+      const msg = data.error?.message || t.errAPI;
+      throw new Error(msg);
+    }
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    document.getElementById('loadingVeil').className = 'loading-veil';
+    document.getElementById('resultTypeIndicator').textContent = t.typeLabels[type];
+    document.getElementById('resultName').textContent = name + t.honorific;
+    document.getElementById('resultMeta').textContent = `${bd} · ${pdata.zodiac} · ${t.lpLabel} ${pdata.lp} · ${pdata.kyusei}`;
+    document.getElementById('fortuneText').textContent = text;
+    document.getElementById('resultScroll').className = 'result-scroll show';
+  } catch(err) {
+    document.getElementById('loadingVeil').className = 'loading-veil';
+    document.getElementById('formSection').style.display = 'block';
+    showError(err.message.includes('API_KEY') ? t.errApiKeyInvalid : t.errAPI);
+    console.error(err);
+  }
+}
+
+function toggleApiKeyVisibility() {
+  const input = document.getElementById('apiKey');
+  const btn = document.getElementById('toggleBtn');
+  const t = I18N[currentLang];
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = t.toggleHide;
+  } else {
+    input.type = 'password';
+    btn.textContent = t.toggleShow;
+  }
+}
+
+function showError(msg) { const el=document.getElementById('errorMsg'); el.textContent=msg; el.className='error-msg show'; }
+function resetForm() { document.getElementById('resultScroll').className='result-scroll'; document.getElementById('formSection').style.display='block'; document.getElementById('errorMsg').className='error-msg'; window.scrollTo({top:0,behavior:'smooth'}); }
+
+// ══════════════════════════════════════════
+// 入力データの保存・復元
+// ══════════════════════════════════════════
+function saveFormData() {
+  const data = {
+    apiKey: document.getElementById('apiKey').value,
+    name: document.getElementById('name').value,
+    birthdate: document.getElementById('birthdate').value,
+    birthtime: document.getElementById('birthtime').value,
+    gender: document.getElementById('gender').value,
+    question: document.getElementById('question').value,
+    lang: currentLang
+  };
+  try { localStorage.setItem('mikagami_form', JSON.stringify(data)); } catch(e) {}
+}
+
+function loadFormData() {
+  try {
+    const saved = localStorage.getItem('mikagami_form');
+    if (!saved) return;
+    const data = JSON.parse(saved);
+    if (data.apiKey) document.getElementById('apiKey').value = data.apiKey;
+    if (data.name) document.getElementById('name').value = data.name;
+    if (data.birthdate) document.getElementById('birthdate').value = data.birthdate;
+    if (data.birthtime) document.getElementById('birthtime').value = data.birthtime;
+    if (data.gender) document.getElementById('gender').value = data.gender;
+    if (data.question) document.getElementById('question').value = data.question;
+    if (data.lang) setLang(data.lang);
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════
+// Night Sky Canvas — Stars & Shooting Stars
+// ══════════════════════════════════════════
+(function() {
+  const canvas = document.getElementById('skyCanvas');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', () => { resize(); initStars(); });
+
+  // ── Static stars ──
+  const STAR_COUNT = 280;
+  let stars = [];
+
+  function initStars() {
+    stars = [];
+    for (let i = 0; i < STAR_COUNT; i++) {
+      const r = Math.random();
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: r < 0.6 ? Math.random() * 0.8 + 0.2
+               : r < 0.9 ? Math.random() * 1.2 + 0.8
+               : Math.random() * 1.8 + 1.2,
+        baseAlpha: Math.random() * 0.5 + 0.3,
+        alpha: 0,
+        twinkleSpeed: Math.random() * 0.02 + 0.005,
+        twinkleOffset: Math.random() * Math.PI * 2,
+        color: r < 0.15 ? '#c9a84c' : r < 0.25 ? '#a0a8c0' : '#ffffff',
+      });
+    }
+  }
+
+  // ── Nebula blobs (drawn once on bg) ──
+  function drawNebula() {
+    const blobs = [
+      { x: 0.18, y: 0.28, rx: 0.28, ry: 0.22, color: 'rgba(74,32,96,0.18)' },
+      { x: 0.80, y: 0.65, rx: 0.24, ry: 0.32, color: 'rgba(13,48,64,0.22)' },
+      { x: 0.55, y: 0.08, rx: 0.20, ry: 0.14, color: 'rgba(139,26,42,0.10)' },
+      { x: 0.40, y: 0.80, rx: 0.18, ry: 0.12, color: 'rgba(20,30,80,0.18)' },
+    ];
+    blobs.forEach(b => {
+      const grd = ctx.createRadialGradient(
+        b.x * canvas.width, b.y * canvas.height, 0,
+        b.x * canvas.width, b.y * canvas.height,
+        Math.max(b.rx * canvas.width, b.ry * canvas.height)
+      );
+      grd.addColorStop(0, b.color);
+      grd.addColorStop(1, 'transparent');
+      ctx.fillStyle = grd;
+      ctx.beginPath();
+      ctx.ellipse(b.x * canvas.width, b.y * canvas.height,
+        b.rx * canvas.width, b.ry * canvas.height, 0, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  // ── Milky Way band ──
+  function drawMilkyWay() {
+    const grd = ctx.createLinearGradient(0, canvas.height * 0.1, canvas.width, canvas.height * 0.9);
+    grd.addColorStop(0,   'transparent');
+    grd.addColorStop(0.3, 'rgba(160,180,255,0.025)');
+    grd.addColorStop(0.5, 'rgba(200,210,255,0.045)');
+    grd.addColorStop(0.7, 'rgba(160,180,255,0.025)');
+    grd.addColorStop(1,   'transparent');
+    ctx.save();
+    ctx.translate(canvas.width/2, canvas.height/2);
+    ctx.rotate(-0.35);
+    ctx.fillStyle = grd;
+    ctx.fillRect(-canvas.width, -canvas.height, canvas.width * 2, canvas.height * 2);
+    ctx.restore();
+  }
+
+  // ── Shooting stars ──
+  const METEOR_MAX = 5;
+  let meteors = [];
+
+  function spawnMeteor() {
+    if (meteors.length >= METEOR_MAX) return;
+    const angle = (Math.random() * 30 + 15) * Math.PI / 180; // 15–45° downward
+    const speed = Math.random() * 8 + 6;
+    const len = Math.random() * 180 + 80;
+    const startX = Math.random() * canvas.width * 1.2 - canvas.width * 0.1;
+    const startY = Math.random() * canvas.height * 0.5;
+    const brightness = Math.random() * 0.4 + 0.6;
+    const hue = Math.random() < 0.3 ? `rgba(201,168,76,${brightness})` : `rgba(255,255,255,${brightness})`;
+    meteors.push({
+      x: startX, y: startY,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      len, color: hue,
+      alpha: 0, phase: 'fadein',  // fadein → live → fadeout
+      life: 0, maxLife: Math.random() * 40 + 30,
+      trail: []
+    });
+  }
+
+  // Spawn meteors at random intervals
+  function scheduleMeteor() {
+    const delay = Math.random() * 2500 + 800;
+    setTimeout(() => { spawnMeteor(); scheduleMeteor(); }, delay);
+  }
+  scheduleMeteor();
+  // Also a burst at start
+  setTimeout(spawnMeteor, 400);
+  setTimeout(spawnMeteor, 1200);
+
+  function updateMeteors() {
+    meteors = meteors.filter(m => m.phase !== 'dead');
+    meteors.forEach(m => {
+      m.trail.push({ x: m.x, y: m.y });
+      if (m.trail.length > 22) m.trail.shift();
+      m.x += m.vx; m.y += m.vy; m.life++;
+
+      if (m.phase === 'fadein') {
+        m.alpha = Math.min(1, m.alpha + 0.08);
+        if (m.alpha >= 1) m.phase = 'live';
+      } else if (m.phase === 'live') {
+        if (m.life > m.maxLife) m.phase = 'fadeout';
+      } else if (m.phase === 'fadeout') {
+        m.alpha = Math.max(0, m.alpha - 0.06);
+        if (m.alpha <= 0) m.phase = 'dead';
+      }
+
+      if (m.x > canvas.width + 200 || m.y > canvas.height + 200) m.phase = 'dead';
+    });
+  }
+
+  function drawMeteors() {
+    meteors.forEach(m => {
+      if (m.trail.length < 2) return;
+      ctx.save();
+      ctx.globalAlpha = m.alpha;
+      // Glowing head
+      const headGrd = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, 3.5);
+      headGrd.addColorStop(0, 'rgba(255,255,255,0.9)');
+      headGrd.addColorStop(0.4, m.color.replace(/[\d.]+\)$/, '0.6)'));
+      headGrd.addColorStop(1, 'transparent');
+      ctx.fillStyle = headGrd;
+      ctx.beginPath(); ctx.arc(m.x, m.y, 3.5, 0, Math.PI * 2); ctx.fill();
+
+      // Tail gradient
+      for (let i = 1; i < m.trail.length; i++) {
+        const t = i / m.trail.length;
+        ctx.beginPath();
+        ctx.moveTo(m.trail[i-1].x, m.trail[i-1].y);
+        ctx.lineTo(m.trail[i].x, m.trail[i].y);
+        ctx.strokeStyle = m.color.replace(/[\d.]+\)$/, `${t * 0.7})`);
+        ctx.lineWidth = t * 2.2;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+      }
+
+      // Sparkle burst at head
+      if (Math.random() < 0.3) {
+        for (let s = 0; s < 2; s++) {
+          const sx = m.x + (Math.random()-0.5)*6;
+          const sy = m.y + (Math.random()-0.5)*6;
+          ctx.fillStyle = `rgba(255,255,220,${Math.random()*0.5})`;
+          ctx.beginPath(); ctx.arc(sx, sy, Math.random()*1.2, 0, Math.PI*2); ctx.fill();
+        }
+      }
+      ctx.restore();
+    });
+  }
+
+  // ── Moon ──
+  function drawMoon() {
+    const mx = canvas.width * 0.88, my = canvas.height * 0.10, mr = 38;
+    // Outer glow
+    const glow = ctx.createRadialGradient(mx, my, mr*0.5, mx, my, mr*3.5);
+    glow.addColorStop(0, 'rgba(220,200,140,0.12)');
+    glow.addColorStop(0.4, 'rgba(180,160,100,0.06)');
+    glow.addColorStop(1, 'transparent');
+    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(mx, my, mr*3.5, 0, Math.PI*2); ctx.fill();
+    // Moon body
+    const body = ctx.createRadialGradient(mx - mr*0.2, my - mr*0.25, mr*0.1, mx, my, mr);
+    body.addColorStop(0, 'rgba(240,230,190,0.92)');
+    body.addColorStop(0.6, 'rgba(210,195,145,0.85)');
+    body.addColorStop(1, 'rgba(160,140,90,0.6)');
+    ctx.fillStyle = body; ctx.beginPath(); ctx.arc(mx, my, mr, 0, Math.PI*2); ctx.fill();
+    // Crescent shadow
+    ctx.fillStyle = 'rgba(4,4,12,0.55)';
+    ctx.beginPath(); ctx.arc(mx + mr*0.22, my - mr*0.08, mr*0.88, 0, Math.PI*2); ctx.fill();
+    // Crater details
+    [[mx-8, my+6, 4], [mx+10, my-10, 3], [mx-2, my-14, 2.5]].forEach(([cx,cy,cr]) => {
+      ctx.fillStyle = 'rgba(120,100,60,0.25)';
+      ctx.beginPath(); ctx.arc(cx, cy, cr, 0, Math.PI*2); ctx.fill();
+    });
+  }
+
+  // ── Main loop ──
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Deep space gradient background
+    const bg = ctx.createRadialGradient(canvas.width*0.4, canvas.height*0.2, 0, canvas.width*0.5, canvas.height*0.5, canvas.width);
+    bg.addColorStop(0, '#0a0814');
+    bg.addColorStop(0.4, '#060410');
+    bg.addColorStop(1, '#020208');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    drawMilkyWay();
+    drawNebula();
+    drawMoon();
+
+    // Draw static stars with twinkle
+    stars.forEach(star => {
+      star.alpha = star.baseAlpha + Math.sin(frame * star.twinkleSpeed + star.twinkleOffset) * 0.3;
+      star.alpha = Math.max(0, Math.min(1, star.alpha));
+      ctx.save();
+      ctx.globalAlpha = star.alpha;
+      if (star.radius > 1.4) {
+        // Cross sparkle for bigger stars
+        ctx.strokeStyle = star.color;
+        ctx.lineWidth = star.radius * 0.3;
+        ctx.globalAlpha = star.alpha * 0.5;
+        const cl = star.radius * 3;
+        ctx.beginPath(); ctx.moveTo(star.x - cl, star.y); ctx.lineTo(star.x + cl, star.y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(star.x, star.y - cl); ctx.lineTo(star.x, star.y + cl); ctx.stroke();
+        ctx.globalAlpha = star.alpha;
+      }
+      // Glow halo
+      const grd = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.radius * 3);
+      grd.addColorStop(0, star.color);
+      grd.addColorStop(1, 'transparent');
+      ctx.fillStyle = grd;
+      ctx.beginPath(); ctx.arc(star.x, star.y, star.radius * 3, 0, Math.PI * 2); ctx.fill();
+      // Core
+      ctx.globalAlpha = Math.min(1, star.alpha * 1.4);
+      ctx.fillStyle = star.color === '#ffffff' ? 'rgba(255,255,255,0.95)' : star.color;
+      ctx.beginPath(); ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    });
+
+    updateMeteors();
+    drawMeteors();
+    frame++;
+    requestAnimationFrame(draw);
+  }
+
+  initStars();
+  draw();
+})();
+
+setLang('ja');
+loadFormData();
+
+</script>
+</body>
+</html>
