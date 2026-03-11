@@ -717,13 +717,16 @@ async function invokeFortune() {
           break;
         }
 
-        const errMsg = data?.error?.message || '';
-        const isQuota = errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED') || res.status === 429;
-        const isInvalidKey = errMsg.includes('API_KEY') || errMsg.includes('API key') || res.status === 400 || res.status === 403;
+        const errMsg = data?.error?.message || data?.error?.status || '';
+        // デバッグ：実際のレスポンスを表示
+        alert(`[デバッグ] キー${i+1}\nHTTP status: ${res.status}\nerror message: ${errMsg}\nfull error: ${JSON.stringify(data?.error)}`);
+
+        const isQuota = errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED') || res.status === 429 || res.status === 503;
+        const isInvalidKey = (errMsg.includes('API_KEY_INVALID') || errMsg.includes('invalid') && errMsg.includes('key')) && res.status === 400;
 
         if (isQuota) {
           quotaCount++;
-          continue; // 次のキーへ
+          continue;
         } else if (isInvalidKey) {
           throw new Error('INVALID_KEY:' + (i+1));
         } else {
