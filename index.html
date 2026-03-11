@@ -212,6 +212,7 @@
           <button class="provider-btn active" data-provider="gemini" onclick="selectProvider('gemini')" style="flex:1">✦ Gemini</button>
           <button class="provider-btn" data-provider="claude" onclick="selectProvider('claude')" style="flex:1">◈ Claude</button>
           <button class="provider-btn" data-provider="openai" onclick="selectProvider('openai')" style="flex:1">⬡ OpenAI</button>
+          <button class="provider-btn" data-provider="openrouter" onclick="selectProvider('openrouter')" style="flex:1">⊕ Free</button>
         </div>
       </div>
       <div class="field" style="margin-bottom:24px">
@@ -474,11 +475,22 @@ const PROVIDER_INFO = {
       fr: 'Obtenez votre clé sur OpenAI Platform (platform.openai.com). Utilise GPT-4o mini. Crédits gratuits pour les nouveaux utilisateurs.',
     },
     labels: { ja:'OpenAI APIキー', en:'OpenAI API Key', zh:'OpenAI API 密钥', ko:'OpenAI API 키', fr:'Clé API OpenAI' },
+  },
+  openrouter: {
+    placeholder: 'sk-or-v1-...',
+    notes: {
+      ja: 'OpenRouter（openrouter.ai）に無料登録してAPIキーを取得。無料モデルを自動選択して使用します。クレジットカード不要。',
+      en: 'Register for free at OpenRouter (openrouter.ai) and get an API key. Uses free models automatically. No credit card required.',
+      zh: '在 OpenRouter（openrouter.ai）免费注册并获取 API 密钥。自动使用免费模型。无需信用卡。',
+      ko: 'OpenRouter(openrouter.ai)에서 무료 가입 후 API 키 발급. 무료 모델을 자동으로 사용합니다. 신용카드 불필요.',
+      fr: 'Inscrivez-vous gratuitement sur OpenRouter (openrouter.ai) et obtenez une clé API. Utilise des modèles gratuits automatiquement. Sans carte bancaire.',
+    },
+    labels: { ja:'OpenRouter APIキー', en:'OpenRouter API Key', zh:'OpenRouter API 密钥', ko:'OpenRouter API 키', fr:'Clé API OpenRouter' },
   }
 };
 
 // 各プロバイダーのキーをメモリに保持
-const savedKeys = { gemini: '', claude: '', openai: '' };
+const savedKeys = { gemini: '', claude: '', openai: '', openrouter: '' };
 
 function selectProvider(provider) {
   // 現在のキーを保存
@@ -762,6 +774,39 @@ async function invokeFortune() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error?.message || t.errAPI);
       text = data.choices?.[0]?.message?.content || '';
+
+    } else if (currentProvider === 'openrouter') {
+      // 無料モデルを順番に試す
+      const FREE_MODELS = [
+        'google/gemma-3-12b-it:free',
+        'meta-llama/llama-3.3-70b-instruct:free',
+        'deepseek/deepseek-chat-v3-0324:free',
+        'mistralai/mistral-7b-instruct:free',
+      ];
+      const statusEl = document.getElementById('apikeyStatus');
+      let orSucceeded = false;
+      for (const model of FREE_MODELS) {
+        if (statusEl) { statusEl.style.display='block'; statusEl.textContent=`🔍 ${model.split('/')[1]} を試行中...`; }
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method:'POST',
+          headers:{
+            'Content-Type':'application/json',
+            'Authorization':'Bearer '+apiKey,
+            'HTTP-Referer': window.location.href,
+            'X-Title': 'Fate Layer',
+          },
+          body: JSON.stringify({ model, max_tokens:1200, temperature:0.85, messages:[{role:'user',content:prompt}] })
+        });
+        const data = await res.json();
+        if (res.ok && data.choices?.[0]?.message?.content) {
+          text = data.choices[0].message.content;
+          if (statusEl) statusEl.textContent = `✦ ${model.split('/')[1]} を使用中`;
+          orSucceeded = true;
+          break;
+        }
+        // 上限・エラーなら次のモデルへ
+      }
+      if (!orSucceeded) throw new Error('ALL_QUOTA');
     }
 
     document.getElementById('loadingVeil').className = 'loading-veil';
