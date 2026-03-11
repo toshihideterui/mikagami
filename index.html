@@ -208,12 +208,12 @@
     <div class="apikey-wrap" id="apikeyWrap">
       <div class="field" style="margin-bottom:16px">
         <label id="lApiProvider" style="display:block;margin-bottom:10px">AI プロバイダー</label>
-        <div style="display:flex;gap:8px;flex-wrap:nowrap">
-          <button class="provider-btn active" data-provider="gemini" onclick="selectProvider('gemini')" style="flex:1">✦ Gemini</button>
-          <button class="provider-btn" data-provider="claude" onclick="selectProvider('claude')" style="flex:1">◈ Claude</button>
-          <button class="provider-btn" data-provider="openai" onclick="selectProvider('openai')" style="flex:1">⬡ OpenAI</button>
-          <button class="provider-btn" data-provider="openrouter" onclick="selectProvider('openrouter')" style="flex:1">⊕ Free</button>
-          <button class="provider-btn" data-provider="groq" onclick="selectProvider('groq')" style="flex:1">⚡ Groq</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="provider-btn active" data-provider="gemini" onclick="selectProvider('gemini')" style="flex:1;min-width:calc(33% - 8px)">✦ Gemini</button>
+          <button class="provider-btn" data-provider="claude" onclick="selectProvider('claude')" style="flex:1;min-width:calc(33% - 8px)">◈ Claude</button>
+          <button class="provider-btn" data-provider="openai" onclick="selectProvider('openai')" style="flex:1;min-width:calc(33% - 8px)">⬡ OpenAI</button>
+          <button class="provider-btn" data-provider="openrouter" onclick="selectProvider('openrouter')" style="flex:1;min-width:calc(33% - 8px)">⊕ Free</button>
+          <button class="provider-btn" data-provider="groq" onclick="selectProvider('groq')" style="flex:1;min-width:calc(33% - 8px)">⚡ Groq</button>
         </div>
       </div>
       <div class="field" style="margin-bottom:24px">
