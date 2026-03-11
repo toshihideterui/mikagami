@@ -776,37 +776,47 @@ async function invokeFortune() {
       text = data.choices?.[0]?.message?.content || '';
 
     } else if (currentProvider === 'openrouter') {
-      // 無料モデルを順番に試す
       const FREE_MODELS = [
         'google/gemma-3-12b-it:free',
         'meta-llama/llama-3.3-70b-instruct:free',
         'deepseek/deepseek-chat-v3-0324:free',
         'mistralai/mistral-7b-instruct:free',
+        'qwen/qwen3-8b:free',
+        'microsoft/phi-4-reasoning-plus:free',
       ];
       const statusEl = document.getElementById('apikeyStatus');
       let orSucceeded = false;
+      let lastErrMsg = '';
       for (const model of FREE_MODELS) {
         if (statusEl) { statusEl.style.display='block'; statusEl.textContent=`🔍 ${model.split('/')[1]} を試行中...`; }
-        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-          method:'POST',
-          headers:{
-            'Content-Type':'application/json',
-            'Authorization':'Bearer '+apiKey,
-            'HTTP-Referer': window.location.href,
-            'X-Title': 'Fate Layer',
-          },
-          body: JSON.stringify({ model, max_tokens:1200, temperature:0.85, messages:[{role:'user',content:prompt}] })
-        });
-        const data = await res.json();
-        if (res.ok && data.choices?.[0]?.message?.content) {
-          text = data.choices[0].message.content;
-          if (statusEl) statusEl.textContent = `✦ ${model.split('/')[1]} を使用中`;
-          orSucceeded = true;
-          break;
+        try {
+          const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json',
+              'Authorization':'Bearer '+apiKey,
+              'HTTP-Referer': window.location.href,
+              'X-Title': 'Fate Layer',
+            },
+            body: JSON.stringify({ model, max_tokens:1200, temperature:0.85, messages:[{role:'user',content:prompt}] })
+          });
+          const data = await res.json();
+          if (res.ok && data.choices?.[0]?.message?.content) {
+            text = data.choices[0].message.content;
+            if (statusEl) statusEl.textContent = `✦ ${model.split('/')[1]} を使用中`;
+            orSucceeded = true;
+            break;
+          }
+          lastErrMsg = `${model.split('/')[1]}: ${res.status} ${data?.error?.message || JSON.stringify(data).slice(0,80)}`;
+          if (statusEl) statusEl.textContent = `⚠ ${lastErrMsg}`;
+        } catch(e) {
+          lastErrMsg = `${model.split('/')[1]}: ネットワークエラー`;
         }
-        // 上限・エラーなら次のモデルへ
       }
-      if (!orSucceeded) throw new Error('ALL_QUOTA');
+      if (!orSucceeded) {
+        if (statusEl) statusEl.textContent = `⚠ 全モデル失敗: ${lastErrMsg}`;
+        throw new Error('OR_FAILED:' + lastErrMsg);
+      }
     }
 
     document.getElementById('loadingVeil').className = 'loading-veil';
@@ -821,6 +831,8 @@ async function invokeFortune() {
     const msg = err.message || '';
     if (msg === 'ALL_QUOTA') {
       showError('全てのGemini APIキーが本日の上限に達しました。明日また試すか、別アカウントのキーを追加してください。');
+    } else if (msg.startsWith('OR_FAILED:')) {
+      showError('OpenRouterエラー: ' + msg.slice(10));
     } else if (msg === 'NETWORK') {
       showError('通信エラーが発生しました。接続を確認してください。');
     } else if (msg.startsWith('INVALID_KEY:')) {
