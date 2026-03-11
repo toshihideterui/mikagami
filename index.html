@@ -217,7 +217,7 @@
       <div class="field" style="margin-bottom:24px">
         <label id="lApiKey">APIキー</label>
         <div style="display:flex;gap:8px;align-items:flex-start">
-          <textarea id="apiKey" rows="2" placeholder="AIza..." style="flex:1;resize:vertical;font-family:monospace;font-size:0.78rem;letter-spacing:0.02em;background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.15);border-radius:1px;color:var(--text);padding:10px 14px;outline:none;transition:border-color .3s;-webkit-text-security:disc" id="apiKey"></textarea>
+          <textarea id="apiKey" rows="2" placeholder="AIza..." style="flex:1;resize:vertical;font-family:monospace;font-size:0.78rem;letter-spacing:0.02em;background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.15);border-radius:1px;color:var(--text);padding:10px 14px;outline:none;transition:border-color .3s;-webkit-text-security:disc;text-security:disc"></textarea>
           <button onclick="toggleApiKeyVisibility()" id="toggleBtn" style="padding:10px 14px;background:transparent;border:1px solid rgba(201,168,76,0.2);color:var(--text-dim);font-size:0.75rem;cursor:pointer;white-space:nowrap;transition:all .3s" onmouseover="this.style.borderColor='rgba(201,168,76,0.5)'" onmouseout="this.style.borderColor='rgba(201,168,76,0.2)'">表示</button>
         </div>
         <p id="apikeyNote" style="font-size:0.62rem;color:var(--text-dim);margin-top:6px;letter-spacing:0.05em;line-height:1.8"></p>
@@ -494,7 +494,8 @@ function selectProvider(provider) {
 
   // キー入力欄を切り替え
   document.getElementById('apiKey').value = savedKeys[provider];
-  document.getElementById('apiKey').type = 'password';
+  document.getElementById('apiKey').style.webkitTextSecurity = 'disc';
+  document.getElementById('apiKey').style.textSecurity = 'disc';
   document.getElementById('toggleBtn').textContent = I18N[currentLang].toggleShow;
 
   updateProviderUI();
@@ -672,71 +673,70 @@ async function invokeFortune() {
     let text = '';
 
     if (currentProvider === 'gemini') {
-      // カンマ区切りで複数キーをパース（全角カンマ・スペース・改行も対応）
+      // カンマ・改行区切りで複数キーをパース
       const geminiKeys = apiKey
-        .replace(/，/g, ',')   // 全角カンマ対応
+        .replace(/，/g, ',')
         .split(/[,\n]/)
         .map(k => k.trim())
         .filter(k => k.length > 5);
 
-      // デバッグ：キー数をステータスに表示
       const statusEl = document.getElementById('apikeyStatus');
       if (statusEl) {
         statusEl.style.display = 'block';
         statusEl.textContent = `🔍 ${geminiKeys.length}件のキーを検出 / 試行中...`;
       }
+
       if (geminiKeys.length === 0) throw new Error('NO_KEY');
 
-      let lastError = null;
-      let usedKeyIndex = -1;
+      let quotaCount = 0;
 
       for (let i = 0; i < geminiKeys.length; i++) {
         const key = geminiKeys[i];
+        if (statusEl) statusEl.textContent = `🔍 キー ${i+1}/${geminiKeys.length} を試行中...`;
+
+        let res, data;
         try {
-          const res = await fetch(
+          res = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
             { method:'POST', headers:{'Content-Type':'application/json'},
               body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{maxOutputTokens:1200,temperature:0.85} }) }
           );
-          const data = await res.json();
-          if (!res.ok) {
-            const errMsg = data.error?.message || '';
-            // 上限エラーなら次のキーへ
-            if (errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED') || res.status === 429) {
-              lastError = new Error('QUOTA:' + errMsg);
-              continue;
-            }
-            throw new Error(errMsg || t.errAPI);
-          }
+          data = await res.json();
+        } catch(fetchErr) {
+          // ネットワークエラーはそのまま投げる
+          throw new Error('NETWORK');
+        }
+
+        if (res.ok) {
           text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          usedKeyIndex = i;
-          break;
-        } catch(e) {
-          if (e.message.startsWith('QUOTA:')) {
-            lastError = e;
-            continue; // 次のキーへ
+          if (geminiKeys.length > 1 && statusEl) {
+            statusEl.textContent = `✦ キー ${i+1}/${geminiKeys.length} を使用中`;
+          } else if (statusEl) {
+            statusEl.style.display = 'none';
           }
-          throw e; // その他のエラーはそのまま投げる
+          break;
+        }
+
+        const errMsg = data?.error?.message || '';
+        const isQuota = errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED') || res.status === 429;
+        const isInvalidKey = errMsg.includes('API_KEY') || errMsg.includes('API key') || res.status === 400 || res.status === 403;
+
+        if (isQuota) {
+          quotaCount++;
+          continue; // 次のキーへ
+        } else if (isInvalidKey) {
+          throw new Error('INVALID_KEY:' + (i+1));
+        } else {
+          throw new Error(errMsg || t.errAPI);
         }
       }
 
-      if (!text && lastError) {
-        // 全キーが上限切れ
-        const statusEl = document.getElementById('apikeyStatus');
-        if (statusEl) {
-          statusEl.style.display = 'block';
-          statusEl.textContent = `⚠ ${geminiKeys.length}件のキー全て本日の上限に達しました。明日リセットされます。`;
+      if (!text) {
+        if (quotaCount === geminiKeys.length) {
+          if (statusEl) statusEl.textContent = `⚠ 全${geminiKeys.length}件のキーが上限に達しています`;
+          throw new Error('ALL_QUOTA');
         }
-        throw new Error('ALL_QUOTA');
-      }
-
-      // 複数キーの場合、使用中キーをステータス表示
-      if (geminiKeys.length > 1 && usedKeyIndex >= 0) {
-        const statusEl = document.getElementById('apikeyStatus');
-        if (statusEl) {
-          statusEl.style.display = 'block';
-          statusEl.textContent = `✦ キー ${usedKeyIndex + 1}/${geminiKeys.length} を使用中`;
-        }
+        throw new Error(t.errAPI);
       }
 
     } else if (currentProvider === 'claude') {
@@ -771,13 +771,16 @@ async function invokeFortune() {
     document.getElementById('formSection').style.display = 'block';
     const msg = err.message || '';
     if (msg === 'ALL_QUOTA') {
-      showError('全てのGemini APIキーが本日の上限に達しました。明日また試すか、別のキーを追加してください。');
-    } else if (msg.includes('API_KEY') || msg.includes('API key') || msg === 'NO_KEY') {
+      showError('全てのGemini APIキーが本日の上限に達しました。明日また試すか、別アカウントのキーを追加してください。');
+    } else if (msg === 'NETWORK') {
+      showError('通信エラーが発生しました。接続を確認してください。');
+    } else if (msg.startsWith('INVALID_KEY:')) {
+      const n = msg.split(':')[1];
+      showError(`${n}番目のAPIキーが無効です。キーを確認してください。`);
+    } else if (msg === 'NO_KEY' || msg.includes('API_KEY') || msg.includes('API key')) {
       showError(t.errApiKeyInvalid);
     } else if (msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
       showError('本日の無料利用上限に達しました。明日また試してください。');
-    } else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed')) {
-      showError('通信エラーが発生しました。接続を確認してください。');
     } else {
       showError(t.errAPI + (msg ? '（' + msg.slice(0, 60) + '）' : ''));
     }
