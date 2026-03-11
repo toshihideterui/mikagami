@@ -213,6 +213,7 @@
           <button class="provider-btn" data-provider="claude" onclick="selectProvider('claude')" style="flex:1">◈ Claude</button>
           <button class="provider-btn" data-provider="openai" onclick="selectProvider('openai')" style="flex:1">⬡ OpenAI</button>
           <button class="provider-btn" data-provider="openrouter" onclick="selectProvider('openrouter')" style="flex:1">⊕ Free</button>
+          <button class="provider-btn" data-provider="groq" onclick="selectProvider('groq')" style="flex:1">⚡ Groq</button>
         </div>
       </div>
       <div class="field" style="margin-bottom:24px">
@@ -486,11 +487,22 @@ const PROVIDER_INFO = {
       fr: 'Inscrivez-vous gratuitement sur OpenRouter (openrouter.ai) et obtenez une clé API. Utilise des modèles gratuits automatiquement. Sans carte bancaire.',
     },
     labels: { ja:'OpenRouter APIキー', en:'OpenRouter API Key', zh:'OpenRouter API 密钥', ko:'OpenRouter API 키', fr:'Clé API OpenRouter' },
+  },
+  groq: {
+    placeholder: 'gsk_...',
+    notes: {
+      ja: 'Groq Console（console.groq.com）に無料登録してAPIキーを取得。完全無料・高速。Llama・Gemmaなどを使用。クレジットカード不要。',
+      en: 'Register for free at Groq Console (console.groq.com). Completely free and fast. Uses Llama, Gemma, etc. No credit card required.',
+      zh: '在 Groq Console（console.groq.com）免费注册获取 API 密钥。完全免费且快速。使用 Llama、Gemma 等模型。无需信用卡。',
+      ko: 'Groq Console(console.groq.com)에서 무료 가입 후 API 키 발급. 완전 무료・고속. Llama, Gemma 등 사용. 신용카드 불필요.',
+      fr: 'Inscrivez-vous gratuitement sur Groq Console (console.groq.com). Entièrement gratuit et rapide. Utilise Llama, Gemma, etc. Sans carte bancaire.',
+    },
+    labels: { ja:'Groq APIキー', en:'Groq API Key', zh:'Groq API 密钥', ko:'Groq API 키', fr:'Clé API Groq' },
   }
 };
 
 // 各プロバイダーのキーをメモリに保持
-const savedKeys = { gemini: '', claude: '', openai: '', openrouter: '' };
+const savedKeys = { gemini: '', claude: '', openai: '', openrouter: '', groq: '' };
 
 function selectProvider(provider) {
   // 現在のキーを保存
@@ -534,6 +546,8 @@ function loadApiKeys() {
     if (data.gemini) savedKeys.gemini = data.gemini;
     if (data.claude) savedKeys.claude = data.claude;
     if (data.openai) savedKeys.openai = data.openai;
+    if (data.openrouter) savedKeys.openrouter = data.openrouter;
+    if (data.groq) savedKeys.groq = data.groq;
     document.getElementById('apiKey').value = savedKeys[currentProvider];
   } catch(e) {}
 }
@@ -817,6 +831,45 @@ async function invokeFortune() {
         if (statusEl) statusEl.textContent = `⚠ 全モデル失敗: ${lastErrMsg}`;
         throw new Error('OR_FAILED:' + lastErrMsg);
       }
+
+    } else if (currentProvider === 'groq') {
+      const GROQ_MODELS = [
+        'llama-3.3-70b-versatile',
+        'llama3-70b-8192',
+        'gemma2-9b-it',
+        'llama3-8b-8192',
+      ];
+      const statusEl = document.getElementById('apikeyStatus');
+      let groqSucceeded = false;
+      let groqLastErr = '';
+      for (const model of GROQ_MODELS) {
+        if (statusEl) { statusEl.style.display='block'; statusEl.textContent=`🔍 ${model} を試行中...`; }
+        try {
+          const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json',
+              'Authorization':'Bearer '+apiKey,
+            },
+            body: JSON.stringify({ model, max_tokens:1200, temperature:0.85, messages:[{role:'user',content:prompt}] })
+          });
+          const data = await res.json();
+          if (res.ok && data.choices?.[0]?.message?.content) {
+            text = data.choices[0].message.content;
+            if (statusEl) statusEl.textContent = `✦ ${model} を使用中`;
+            groqSucceeded = true;
+            break;
+          }
+          groqLastErr = `${model}: ${res.status} ${data?.error?.message || ''}`;
+          if (statusEl) statusEl.textContent = `⚠ ${groqLastErr}`;
+        } catch(e) {
+          groqLastErr = `${model}: ネットワークエラー`;
+        }
+      }
+      if (!groqSucceeded) {
+        if (statusEl) statusEl.textContent = `⚠ 全モデル失敗: ${groqLastErr}`;
+        throw new Error('GROQ_FAILED:' + groqLastErr);
+      }
     }
 
     document.getElementById('loadingVeil').className = 'loading-veil';
@@ -833,6 +886,8 @@ async function invokeFortune() {
       showError('全てのGemini APIキーが本日の上限に達しました。明日また試すか、別アカウントのキーを追加してください。');
     } else if (msg.startsWith('OR_FAILED:')) {
       showError('OpenRouterエラー: ' + msg.slice(10));
+    } else if (msg.startsWith('GROQ_FAILED:')) {
+      showError('Groqエラー: ' + msg.slice(12));
     } else if (msg === 'NETWORK') {
       showError('通信エラーが発生しました。接続を確認してください。');
     } else if (msg.startsWith('INVALID_KEY:')) {

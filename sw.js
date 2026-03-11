@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mikagami-v3';
+const CACHE_NAME = 'fatelayer-v5';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
@@ -15,7 +15,7 @@ self.addEventListener('activate', event => {
 // ネットワーク優先：常に最新のファイルを取得
 self.addEventListener('fetch', event => {
   event.respondWith(
-    fetch(event.request).catch(() =>
+    fetch(event.request, { cache: 'no-store' }).catch(() =>
       caches.match(event.request)
     )
   );
