@@ -112,13 +112,6 @@
   input:focus, select:focus, textarea:focus { border-color:rgba(201,168,76,0.5); background:rgba(201,168,76,0.04); box-shadow:0 0 20px rgba(201,168,76,0.08); }
 
   .fortune-types { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:28px; }
-  .provider-btn {
-    padding:8px 18px; background:transparent;
-    border:1px solid rgba(201,168,76,0.2); border-radius:1px; color:var(--text-dim);
-    font-family:inherit; font-size:0.8rem; cursor:pointer; transition:all .3s; letter-spacing:0.08em;
-  }
-  .provider-btn:hover { border-color:var(--gold-dim); color:var(--text); }
-  .provider-btn.active { border-color:var(--gold); color:var(--gold); background:rgba(201,168,76,0.08); }
   .type-btn {
     flex:1; min-width:110px; padding:10px 12px; background:transparent;
     border:1px solid rgba(201,168,76,0.2); border-radius:1px; color:var(--text-dim);
@@ -204,25 +197,15 @@
     <div class="corner tl"></div><div class="corner tr"></div>
     <div class="corner bl"></div><div class="corner br"></div>
 
-    <!-- API Provider & Key -->
+    <!-- API Key -->
     <div class="apikey-wrap" id="apikeyWrap">
-      <div class="field" style="margin-bottom:16px">
-        <label id="lApiProvider" style="display:block;margin-bottom:10px">AI プロバイダー</label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="provider-btn active" data-provider="gemini" onclick="selectProvider('gemini')" style="flex:1;min-width:calc(33% - 8px)">✦ Gemini</button>
-          <button class="provider-btn" data-provider="claude" onclick="selectProvider('claude')" style="flex:1;min-width:calc(33% - 8px)">◈ Claude</button>
-          <button class="provider-btn" data-provider="openai" onclick="selectProvider('openai')" style="flex:1;min-width:calc(33% - 8px)">⬡ OpenAI</button>
-          <button class="provider-btn" data-provider="openrouter" onclick="selectProvider('openrouter')" style="flex:1;min-width:calc(33% - 8px)">⊕ Free</button>
-          <button class="provider-btn" data-provider="groq" onclick="selectProvider('groq')" style="flex:1;min-width:calc(33% - 8px)">⚡ Groq</button>
-        </div>
-      </div>
       <div class="field" style="margin-bottom:24px">
-        <label id="lApiKey">APIキー</label>
+        <label id="lApiKey">⚡ Groq APIキー</label>
         <div style="display:flex;gap:8px;align-items:flex-start">
-          <textarea id="apiKey" rows="2" placeholder="AIza..." style="flex:1;resize:vertical;font-family:monospace;font-size:0.78rem;letter-spacing:0.02em;background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.15);border-radius:1px;color:var(--text);padding:10px 14px;outline:none;transition:border-color .3s;-webkit-text-security:disc;text-security:disc"></textarea>
+          <textarea id="apiKey" rows="2" placeholder="gsk_..." style="flex:1;resize:vertical;font-family:monospace;font-size:0.78rem;letter-spacing:0.02em;background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.15);border-radius:1px;color:var(--text);padding:10px 14px;outline:none;transition:border-color .3s;-webkit-text-security:disc;text-security:disc"></textarea>
           <button onclick="toggleApiKeyVisibility()" id="toggleBtn" style="padding:10px 14px;background:transparent;border:1px solid rgba(201,168,76,0.2);color:var(--text-dim);font-size:0.75rem;cursor:pointer;white-space:nowrap;transition:all .3s" onmouseover="this.style.borderColor='rgba(201,168,76,0.5)'" onmouseout="this.style.borderColor='rgba(201,168,76,0.2)'">表示</button>
         </div>
-        <p id="apikeyNote" style="font-size:0.62rem;color:var(--text-dim);margin-top:6px;letter-spacing:0.05em;line-height:1.8"></p>
+        <p id="apikeyNote" style="font-size:0.62rem;color:var(--text-dim);margin-top:6px;letter-spacing:0.05em;line-height:1.8">Groq Console（console.groq.com）に無料登録してAPIキーを取得。完全無料・高速。クレジットカード不要。</p>
         <p id="apikeyStatus" style="font-size:0.62rem;color:var(--gold-dim);margin-top:4px;letter-spacing:0.05em;line-height:1.8;display:none"></p>
       </div>
     </div>
@@ -290,9 +273,9 @@ const I18N = {
     resetBtn:'▸ 新たな問いを立てる', footerText:'Fate Layer<br>占いは参考程度にお楽しみください',
     errName:'お名前をご入力ください', errBirth:'生年月日をご入力ください',
     errAPI:'天の声を受信できませんでした。しばらくしてから再度お試しください。',
-    errApiKey:'Gemini APIキーを入力してください',
+    errApiKey:'Groq APIキーを入力してください',
     errApiKeyInvalid:'APIキーが無効です。正しいキーをご確認ください。',
-    lApiKey:'Gemini APIキー',
+    lApiKey:'⚡ Groq APIキー',
     apikeyNote:'無料のAPIキーは Google AI Studio（aistudio.google.com）で取得できます。キーはブラウザ内にのみ保存され、外部に送信されません。',
     toggleShow:'表示', toggleHide:'隠す',
     honorific:' 様', lpLabel:'ライフパス',
@@ -311,9 +294,9 @@ const I18N = {
     resetBtn:'▸ Ask a New Question', footerText:'Mirror of Fate · Ancient Oracle<br>For entertainment purposes only',
     errName:'Please enter your name', errBirth:'Please enter your date of birth',
     errAPI:'Could not receive the celestial message. Please try again.',
-    errApiKey:'Please enter your Gemini API key',
+    errApiKey:'Please enter your Groq API key',
     errApiKeyInvalid:'Invalid API key. Please check your key.',
-    lApiKey:'Gemini API Key',
+    lApiKey:'⚡ Groq API Key',
     apikeyNote:'Get a free API key at Google AI Studio (aistudio.google.com). Your key is stored only in your browser and never sent anywhere else.',
     toggleShow:'Show', toggleHide:'Hide',
     honorific:'', lpLabel:'Life Path',
@@ -332,9 +315,9 @@ const I18N = {
     resetBtn:'▸ 提出新的问题', footerText:'命运之镜 · 天命占術<br>仅供娱乐参考',
     errName:'请输入您的姓名', errBirth:'请输入您的出生日期',
     errAPI:'无法接收天机信息，请稍后再试。',
-    errApiKey:'请输入您的 Gemini API 密钥',
+    errApiKey:'请输入您的 Groq API 密钥',
     errApiKeyInvalid:'API 密钥无效，请确认后重试。',
-    lApiKey:'Gemini API 密钥',
+    lApiKey:'⚡ Groq API 密钥',
     apikeyNote:'免费的 API 密钥可在 Google AI Studio（aistudio.google.com）获取。密钥仅保存在您的浏览器中，不会发送到其他地方。',
     toggleShow:'显示', toggleHide:'隐藏',
     honorific:' 先生/女士', lpLabel:'生命路径数',
@@ -353,9 +336,9 @@ const I18N = {
     resetBtn:'▸ 새 질문하기', footerText:'운명의 거울 · 천명 점술<br>참고용으로만 즐겨주세요',
     errName:'성명을 입력해 주세요', errBirth:'생년월일을 입력해 주세요',
     errAPI:'천기를 받지 못했습니다. 잠시 후 다시 시도해 주세요.',
-    errApiKey:'Gemini API 키를 입력해 주세요',
+    errApiKey:'Groq API 키를 입력해 주세요',
     errApiKeyInvalid:'API 키가 유효하지 않습니다. 키를 확인해 주세요.',
-    lApiKey:'Gemini API 키',
+    lApiKey:'⚡ Groq API 키',
     apikeyNote:'무료 API 키는 Google AI Studio(aistudio.google.com)에서 발급받을 수 있습니다. 키는 브라우저에만 저장되며 외부로 전송되지 않습니다.',
     toggleShow:'표시', toggleHide:'숨기기',
     honorific:' 님', lpLabel:'라이프패스',
@@ -374,9 +357,9 @@ const I18N = {
     resetBtn:'▸ Poser une Nouvelle Question', footerText:'Miroir du Destin · Oracle Suprême<br>À titre indicatif seulement',
     errName:'Veuillez entrer votre nom', errBirth:'Veuillez entrer votre date de naissance',
     errAPI:'Impossible de recevoir le message céleste. Veuillez réessayer.',
-    errApiKey:'Veuillez entrer votre clé API Gemini',
+    errApiKey:'Veuillez entrer votre clé API Groq',
     errApiKeyInvalid:'Clé API invalide. Veuillez vérifier votre clé.',
-    lApiKey:'Clé API Gemini',
+    lApiKey:'⚡ Clé API Groq',
     apikeyNote:"Obtenez une clé API gratuite sur Google AI Studio (aistudio.google.com). Votre clé est stockée uniquement dans votre navigateur et n'est envoyée nulle part ailleurs.",
     toggleShow:'Afficher', toggleHide:'Masquer',
     honorific:'', lpLabel:'Chemin de Vie',
@@ -441,101 +424,25 @@ function setLang(lang) {
 // ══════════════════════════════════════════
 // API Provider
 // ══════════════════════════════════════════
-let currentProvider = 'gemini';
+let currentProvider = 'groq';
 
-const PROVIDER_INFO = {
-  gemini: {
-    placeholder: 'AIza... , AIza... , AIza...',
-    notes: {
-      ja: 'Google AI Studio（aistudio.google.com）で無料取得。複数キーをカンマ区切りで入力すると自動切替。※日本のアカウントでは無料枠が制限されている場合があります。その場合は⚡ Groqをお試しください。',
-      en: 'Get a free key at Google AI Studio (aistudio.google.com). Uses Gemini 2.0 Flash. 1,500 free requests/day. Enter multiple keys separated by commas for automatic rotation.',
-      zh: '在 Google AI Studio（aistudio.google.com）免费获取。使用 Gemini 2.0 Flash。每日免费1,500次。可用逗号分隔多个密钥，达到上限时自动切换。',
-      ko: 'Google AI Studio(aistudio.google.com)에서 무료 발급. Gemini 2.0 Flash 사용. 하루 1,500회 무료. 여러 키를 쉼표로 구분하면 한도 초과 시 자동 전환됩니다.',
-      fr: 'Obtenez une clé gratuite sur Google AI Studio (aistudio.google.com). Utilise Gemini 2.0 Flash. 1 500 requêtes gratuites/jour. Entrez plusieurs clés séparées par des virgules pour la rotation automatique.',
-    },
-    labels: { ja:'Gemini APIキー', en:'Gemini API Key', zh:'Gemini API 密钥', ko:'Gemini API 키', fr:'Clé API Gemini' },
-  },
-  claude: {
-    placeholder: 'sk-ant-...',
-    notes: {
-      ja: 'Anthropic Console（console.anthropic.com）で取得。Claude Haiku使用。新規登録で無料クレジットあり。',
-      en: 'Get your key at Anthropic Console (console.anthropic.com). Uses Claude Haiku. Free credits for new users.',
-      zh: '在 Anthropic Console（console.anthropic.com）获取。使用 Claude Haiku。新用户有免费额度。',
-      ko: 'Anthropic Console(console.anthropic.com)에서 발급. Claude Haiku 사용. 신규 가입 시 무료 크레딧 제공.',
-      fr: 'Obtenez votre clé sur Anthropic Console (console.anthropic.com). Utilise Claude Haiku. Crédits gratuits pour les nouveaux utilisateurs.',
-    },
-    labels: { ja:'Claude APIキー', en:'Claude API Key', zh:'Claude API 密钥', ko:'Claude API 키', fr:'Clé API Claude' },
-  },
-  openai: {
-    placeholder: 'sk-...',
-    notes: {
-      ja: 'OpenAI Platform（platform.openai.com）で取得。GPT-4o mini使用。新規登録で無料クレジットあり。',
-      en: 'Get your key at OpenAI Platform (platform.openai.com). Uses GPT-4o mini. Free credits for new users.',
-      zh: '在 OpenAI Platform（platform.openai.com）获取。使用 GPT-4o mini。新用户有免费额度。',
-      ko: 'OpenAI Platform(platform.openai.com)에서 발급. GPT-4o mini 사용. 신규 가입 시 무료 크레딧 제공.',
-      fr: 'Obtenez votre clé sur OpenAI Platform (platform.openai.com). Utilise GPT-4o mini. Crédits gratuits pour les nouveaux utilisateurs.',
-    },
-    labels: { ja:'OpenAI APIキー', en:'OpenAI API Key', zh:'OpenAI API 密钥', ko:'OpenAI API 키', fr:'Clé API OpenAI' },
-  },
-  openrouter: {
-    placeholder: 'sk-or-v1-...',
-    notes: {
-      ja: 'OpenRouter（openrouter.ai）に無料登録してAPIキーを取得。無料モデルを自動選択して使用します。クレジットカード不要。',
-      en: 'Register for free at OpenRouter (openrouter.ai) and get an API key. Uses free models automatically. No credit card required.',
-      zh: '在 OpenRouter（openrouter.ai）免费注册并获取 API 密钥。自动使用免费模型。无需信用卡。',
-      ko: 'OpenRouter(openrouter.ai)에서 무료 가입 후 API 키 발급. 무료 모델을 자동으로 사용합니다. 신용카드 불필요.',
-      fr: 'Inscrivez-vous gratuitement sur OpenRouter (openrouter.ai) et obtenez une clé API. Utilise des modèles gratuits automatiquement. Sans carte bancaire.',
-    },
-    labels: { ja:'OpenRouter APIキー', en:'OpenRouter API Key', zh:'OpenRouter API 密钥', ko:'OpenRouter API 키', fr:'Clé API OpenRouter' },
-  },
-  groq: {
-    placeholder: 'gsk_...',
-    notes: {
-      ja: 'Groq Console（console.groq.com）に無料登録してAPIキーを取得。完全無料・高速。Llama・Gemmaなどを使用。クレジットカード不要。',
-      en: 'Register for free at Groq Console (console.groq.com). Completely free and fast. Uses Llama, Gemma, etc. No credit card required.',
-      zh: '在 Groq Console（console.groq.com）免费注册获取 API 密钥。完全免费且快速。使用 Llama、Gemma 等模型。无需信用卡。',
-      ko: 'Groq Console(console.groq.com)에서 무료 가입 후 API 키 발급. 완전 무료・고속. Llama, Gemma 등 사용. 신용카드 불필요.',
-      fr: 'Inscrivez-vous gratuitement sur Groq Console (console.groq.com). Entièrement gratuit et rapide. Utilise Llama, Gemma, etc. Sans carte bancaire.',
-    },
-    labels: { ja:'Groq APIキー', en:'Groq API Key', zh:'Groq API 密钥', ko:'Groq API 키', fr:'Clé API Groq' },
-  }
+// Groq専用
+const GROQ_NOTE = {
+  ja: 'Groq Console（console.groq.com）に無料登録してAPIキーを取得。完全無料・高速。クレジットカード不要。',
+  en: 'Register for free at Groq Console (console.groq.com). Completely free and fast. No credit card required.',
+  zh: '在 Groq Console（console.groq.com）免费注册获取 API 密钥。完全免费且快速。无需信用卡。',
+  ko: 'Groq Console(console.groq.com)에서 무료 가입 후 API 키 발급. 완전 무료・고속. 신용카드 불필요.',
+  fr: 'Inscrivez-vous gratuitement sur Groq Console (console.groq.com). Entièrement gratuit et rapide. Sans carte bancaire.',
 };
 
-// 各プロバイダーのキーをメモリに保持
-const savedKeys = { gemini: '', claude: '', openai: '', openrouter: '', groq: '' };
-
-function selectProvider(provider) {
-  // 現在のキーを保存
-  savedKeys[currentProvider] = document.getElementById('apiKey').value;
-  saveApiKeys();
-
-  currentProvider = provider;
-
-  // ボタンのactive更新
-  document.querySelectorAll('.provider-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.provider === provider);
-  });
-
-  // キー入力欄を切り替え
-  document.getElementById('apiKey').value = savedKeys[provider];
-  document.getElementById('apiKey').style.webkitTextSecurity = 'disc';
-  document.getElementById('apiKey').style.textSecurity = 'disc';
-  document.getElementById('toggleBtn').textContent = I18N[currentLang].toggleShow;
-
-  updateProviderUI();
-}
-
 function updateProviderUI() {
-  const info = PROVIDER_INFO[currentProvider];
-  const lang = info.labels[currentLang] ? currentLang : 'en';
-  document.getElementById('lApiKey').textContent = info.labels[lang];
-  document.getElementById('apiKey').placeholder = info.placeholder;
-  document.getElementById('apikeyNote').textContent = info.notes[lang];
+  const note = GROQ_NOTE[currentLang] || GROQ_NOTE.ja;
+  const noteEl = document.getElementById('apikeyNote');
+  if (noteEl) noteEl.textContent = note;
 }
 
 function saveApiKeys() {
-  savedKeys[currentProvider] = document.getElementById('apiKey').value;
-  try { localStorage.setItem('mikagami_apikeys', JSON.stringify(savedKeys)); } catch(e) {}
+  try { localStorage.setItem('mikagami_apikeys', JSON.stringify({ groq: document.getElementById('apiKey').value })); } catch(e) {}
 }
 
 function loadApiKeys() {
@@ -543,12 +450,7 @@ function loadApiKeys() {
     const raw = localStorage.getItem('mikagami_apikeys');
     if (!raw) return;
     const data = JSON.parse(raw);
-    if (data.gemini) savedKeys.gemini = data.gemini;
-    if (data.claude) savedKeys.claude = data.claude;
-    if (data.openai) savedKeys.openai = data.openai;
-    if (data.openrouter) savedKeys.openrouter = data.openrouter;
-    if (data.groq) savedKeys.groq = data.groq;
-    document.getElementById('apiKey').value = savedKeys[currentProvider];
+    if (data.groq) document.getElementById('apiKey').value = data.groq;
   } catch(e) {}
 }
 
@@ -698,147 +600,6 @@ async function invokeFortune() {
   try {
     let text = '';
 
-    if (currentProvider === 'gemini') {
-      // カンマ・改行区切りで複数キーをパース
-      const geminiKeys = apiKey
-        .replace(/，/g, ',')
-        .split(/[,\n]/)
-        .map(k => k.trim())
-        .filter(k => k.length > 5);
-
-      const statusEl = document.getElementById('apikeyStatus');
-      if (statusEl) {
-        statusEl.style.display = 'block';
-        statusEl.textContent = `🔍 ${geminiKeys.length}件のキーを検出 / 試行中...`;
-      }
-
-      if (geminiKeys.length === 0) throw new Error('NO_KEY');
-
-      const GEMINI_MODELS = [
-        'gemini-1.5-flash-8b',
-        'gemini-1.5-flash',
-        'gemini-2.0-flash',
-      ];
-
-      let succeeded = false;
-
-      outer:
-      for (const model of GEMINI_MODELS) {
-        for (let i = 0; i < geminiKeys.length; i++) {
-          const key = geminiKeys[i];
-          if (statusEl) statusEl.textContent = `🔍 ${model} / キー ${i+1}/${geminiKeys.length} を試行中...`;
-
-          let res, data;
-          try {
-            res = await fetch(
-              `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
-              { method:'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{maxOutputTokens:1200,temperature:0.85} }) }
-            );
-            data = await res.json();
-          } catch(fetchErr) {
-            // ネットワークエラーは次のモデルへ
-            continue;
-          }
-
-          if (res.ok) {
-            const candidate = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-            if (candidate) {
-              text = candidate;
-              if (statusEl) {
-                if (geminiKeys.length > 1) {
-                  statusEl.textContent = `✦ ${model} / キー ${i+1}/${geminiKeys.length} を使用中`;
-                } else {
-                  statusEl.style.display = 'none';
-                }
-              }
-              succeeded = true;
-              break outer;
-            }
-            // 空レスポンスは次のモデルへ
-            continue;
-          }
-
-          const errMsg = data?.error?.message || '';
-          const isQuota = errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED') || res.status === 429;
-          const isInvalidKey = errMsg.includes('API_KEY_INVALID') || (errMsg.toLowerCase().includes('invalid') && errMsg.toLowerCase().includes('key'));
-
-          if (isInvalidKey) {
-            throw new Error('INVALID_KEY:' + (i+1));
-          }
-          // quota or other error → try next key/model
-        }
-      }
-
-      if (!succeeded) {
-        if (statusEl) statusEl.textContent = `⚠ 利用可能なキー・モデルが見つかりませんでした`;
-        throw new Error('ALL_QUOTA');
-      }
-
-    } else if (currentProvider === 'claude') {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:1200, messages:[{role:'user',content:prompt}] })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error?.message || t.errAPI);
-      text = data.content?.[0]?.text || '';
-
-    } else if (currentProvider === 'openai') {
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
-        body: JSON.stringify({ model:'gpt-4o-mini', max_tokens:1200, temperature:0.85, messages:[{role:'user',content:prompt}] })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error?.message || t.errAPI);
-      text = data.choices?.[0]?.message?.content || '';
-
-    } else if (currentProvider === 'openrouter') {
-      const FREE_MODELS = [
-        'google/gemma-3-12b-it:free',
-        'meta-llama/llama-3.3-70b-instruct:free',
-        'deepseek/deepseek-chat-v3-0324:free',
-        'mistralai/mistral-7b-instruct:free',
-        'qwen/qwen3-8b:free',
-        'microsoft/phi-4-reasoning-plus:free',
-      ];
-      const statusEl = document.getElementById('apikeyStatus');
-      let orSucceeded = false;
-      let lastErrMsg = '';
-      for (const model of FREE_MODELS) {
-        if (statusEl) { statusEl.style.display='block'; statusEl.textContent=`🔍 ${model.split('/')[1]} を試行中...`; }
-        try {
-          const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method:'POST',
-            headers:{
-              'Content-Type':'application/json',
-              'Authorization':'Bearer '+apiKey,
-              'HTTP-Referer': window.location.href,
-              'X-Title': 'Fate Layer',
-            },
-            body: JSON.stringify({ model, max_tokens:1200, temperature:0.85, messages:[{role:'user',content:prompt}] })
-          });
-          const data = await res.json();
-          if (res.ok && data.choices?.[0]?.message?.content) {
-            text = data.choices[0].message.content;
-            if (statusEl) statusEl.textContent = `✦ ${model.split('/')[1]} を使用中`;
-            orSucceeded = true;
-            break;
-          }
-          lastErrMsg = `${model.split('/')[1]}: ${res.status} ${data?.error?.message || JSON.stringify(data).slice(0,80)}`;
-          if (statusEl) statusEl.textContent = `⚠ ${lastErrMsg}`;
-        } catch(e) {
-          lastErrMsg = `${model.split('/')[1]}: ネットワークエラー`;
-        }
-      }
-      if (!orSucceeded) {
-        if (statusEl) statusEl.textContent = `⚠ 全モデル失敗: ${lastErrMsg}`;
-        throw new Error('OR_FAILED:' + lastErrMsg);
-      }
-
-    } else if (currentProvider === 'groq') {
       const GROQ_MODELS = [
         'llama-3.3-70b-versatile',
         'llama3-70b-8192',
@@ -862,7 +623,7 @@ async function invokeFortune() {
           const data = await res.json();
           if (res.ok && data.choices?.[0]?.message?.content) {
             text = data.choices[0].message.content;
-            if (statusEl) statusEl.textContent = `✦ ${model} を使用中`;
+            if (statusEl) statusEl.style.display = 'none';
             groqSucceeded = true;
             break;
           }
@@ -876,7 +637,6 @@ async function invokeFortune() {
         if (statusEl) statusEl.textContent = `⚠ 全モデル失敗: ${groqLastErr}`;
         throw new Error('GROQ_FAILED:' + groqLastErr);
       }
-    }
 
     document.getElementById('loadingVeil').className = 'loading-veil';
     document.getElementById('resultTypeIndicator').textContent = t.typeLabels[type];
@@ -888,21 +648,12 @@ async function invokeFortune() {
     document.getElementById('loadingVeil').className = 'loading-veil';
     document.getElementById('formSection').style.display = 'block';
     const msg = err.message || '';
-    if (msg === 'ALL_QUOTA') {
-      showError('Gemini APIの無料枠が利用できません。日本のアカウントでは制限されている場合があります。⚡ Groqボタンに切り替えてGroqのAPIキー（console.groq.com で無料取得）をお試しください。');
-    } else if (msg.startsWith('OR_FAILED:')) {
-      showError('OpenRouterエラー: ' + msg.slice(10));
-    } else if (msg.startsWith('GROQ_FAILED:')) {
-      showError('Groqエラー: ' + msg.slice(12));
+    if (msg.startsWith('GROQ_FAILED:')) {
+      showError('Groqエラー: ' + msg.slice(12) + '。APIキーを確認するか、しばらくしてから再試行してください。');
     } else if (msg === 'NETWORK') {
       showError('通信エラーが発生しました。接続を確認してください。');
-    } else if (msg.startsWith('INVALID_KEY:')) {
-      const n = msg.split(':')[1];
-      showError(`${n}番目のAPIキーが無効です。キーを確認してください。`);
     } else if (msg === 'NO_KEY' || msg.includes('API_KEY') || msg.includes('API key')) {
       showError(t.errApiKeyInvalid);
-    } else if (msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
-      showError('本日の無料利用上限に達しました。明日また試してください。');
     } else {
       showError(t.errAPI + (msg ? '（' + msg.slice(0, 60) + '）' : ''));
     }
