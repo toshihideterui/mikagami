@@ -15,10 +15,6 @@
     });
   }
 </script>
-<script type="module">
-  import * as webllm from "https://esm.run/@mlc-ai/web-llm";
-  window.webllm = webllm;
-</script>
 <style>
   :root {
     --void: #040408; --deep: #08080f; --ink: #0d0d1a;
@@ -201,48 +197,16 @@
     <div class="corner tl"></div><div class="corner tr"></div>
     <div class="corner bl"></div><div class="corner br"></div>
 
-    <!-- WebLLM Model Section -->
+    <!-- API Key -->
     <div class="apikey-wrap" id="apikeyWrap">
       <div class="field" style="margin-bottom:24px">
-        <label style="display:block;margin-bottom:10px;letter-spacing:0.1em">🤖 ローカルAIモデル</label>
-
-        <!-- Model selector -->
-        <div style="display:flex;gap:8px;margin-bottom:12px">
-          <button id="modelBtn1B" onclick="selectModel('1B')" class="type-btn active" style="flex:1;font-size:0.72rem;padding:8px 4px">
-            Llama-3.2-1B<br><span style="font-size:0.6rem;opacity:0.6">約1GB・高速</span>
-          </button>
-          <button id="modelBtn8B" onclick="selectModel('8B')" class="type-btn" style="flex:1;font-size:0.72rem;padding:8px 4px">
-            Llama-3.1-8B<br><span style="font-size:0.6rem;opacity:0.6">約4GB・高精度</span>
-          </button>
+        <label id="lApiKey">⚡ Groq APIキー</label>
+        <div style="display:flex;gap:8px;align-items:flex-start">
+          <textarea id="apiKey" rows="2" placeholder="gsk_..." style="flex:1;resize:vertical;font-family:monospace;font-size:0.78rem;letter-spacing:0.02em;background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.15);border-radius:1px;color:var(--text);padding:10px 14px;outline:none;transition:border-color .3s;-webkit-text-security:disc;text-security:disc"></textarea>
+          <button onclick="toggleApiKeyVisibility()" id="toggleBtn" style="padding:10px 14px;background:transparent;border:1px solid rgba(201,168,76,0.2);color:var(--text-dim);font-size:0.75rem;cursor:pointer;white-space:nowrap;transition:all .3s" onmouseover="this.style.borderColor='rgba(201,168,76,0.5)'" onmouseout="this.style.borderColor='rgba(201,168,76,0.2)'">表示</button>
         </div>
-
-        <!-- Status & Download button -->
-        <div id="modelStatusWrap">
-          <p id="modelStatus" style="font-size:0.68rem;color:var(--text-dim);margin-bottom:10px;letter-spacing:0.05em;line-height:1.8">
-            モデル未ダウンロード。ボタンを押してダウンロードを開始してください。
-          </p>
-          <!-- Progress bar -->
-          <div id="progressWrap" style="display:none;margin-bottom:10px">
-            <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(201,168,76,0.15);border-radius:2px;overflow:hidden;height:6px">
-              <div id="progressBar" style="height:100%;width:0%;background:linear-gradient(to right,var(--gold-dim),var(--gold));transition:width 0.3s"></div>
-            </div>
-            <p id="progressText" style="font-size:0.6rem;color:var(--gold-dim);margin-top:4px;text-align:right"></p>
-          </div>
-          <button id="downloadBtn" onclick="downloadModel()" style="width:100%;padding:10px;background:transparent;border:1px solid rgba(201,168,76,0.3);color:var(--gold);font-family:inherit;font-size:0.78rem;letter-spacing:0.1em;cursor:pointer;transition:all .3s" onmouseover="this.style.background='rgba(201,168,76,0.08)'" onmouseout="this.style.background='transparent'">
-            ⬇ AIモデルをダウンロード
-          </button>
-        </div>
-
-        <!-- Groq fallback (hidden by default, shown on iPhone) -->
-        <div id="groqFallback" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid rgba(201,168,76,0.1)">
-          <label id="lApiKey" style="display:block;margin-bottom:8px">⚡ Groq APIキー</label>
-          <div style="display:flex;gap:8px;align-items:flex-start">
-            <textarea id="apiKey" rows="2" placeholder="gsk_..." style="flex:1;resize:vertical;font-family:monospace;font-size:0.78rem;background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.15);border-radius:1px;color:var(--text);padding:10px 14px;outline:none;-webkit-text-security:disc;text-security:disc"></textarea>
-            <button onclick="toggleApiKeyVisibility()" id="toggleBtn" style="padding:10px 14px;background:transparent;border:1px solid rgba(201,168,76,0.2);color:var(--text-dim);font-size:0.75rem;cursor:pointer;white-space:nowrap">表示</button>
-          </div>
-          <p style="font-size:0.62rem;color:var(--text-dim);margin-top:6px;line-height:1.8">Groq Console（console.groq.com）で無料取得。</p>
-          <p id="apikeyStatus" style="font-size:0.62rem;color:var(--gold-dim);margin-top:4px;display:none"></p>
-        </div>
+        <p id="apikeyNote" style="font-size:0.62rem;color:var(--text-dim);margin-top:6px;letter-spacing:0.05em;line-height:1.8">Groq Console（console.groq.com）に無料登録してAPIキーを取得。完全無料・高速。クレジットカード不要。</p>
+        <p id="apikeyStatus" style="font-size:0.62rem;color:var(--gold-dim);margin-top:4px;letter-spacing:0.05em;line-height:1.8;display:none"></p>
       </div>
     </div>
 
@@ -450,97 +414,35 @@ function setLang(lang) {
   document.getElementById('footerText').innerHTML = t.footerText;
   ['gOpt0','gOpt1','gOpt2','gOpt3'].forEach(id => { document.getElementById(id).textContent = t[id]; });
   document.querySelectorAll('.tlbl').forEach(el => { el.textContent = t[el.dataset.key] || ''; });
-  const lApiKeyEl = document.getElementById('lApiKey');
-  if (lApiKeyEl) lApiKeyEl.textContent = t.lApiKey;
-  const toggleBtnEl = document.getElementById('toggleBtn');
-  if (toggleBtnEl) toggleBtnEl.textContent = t.toggleShow;
+  document.getElementById('lApiKey').textContent = t.lApiKey;
+  document.getElementById('apikeyNote').textContent = t.apikeyNote;
+  document.getElementById('toggleBtn').textContent = t.toggleShow;
   document.title = t.appTitle;
+  updateProviderUI();
 }
 
 // ══════════════════════════════════════════
-// WebLLM
+// API Provider
 // ══════════════════════════════════════════
-let useGroqFallback = false;
-let selectedModel = '1B';
-let engine = null;
-let modelLoaded = false;
+let currentProvider = 'groq';
 
-const MODELS = {
-  '1B': 'Llama-3.2-1B-Instruct-q4f32_1-MLC',
-  '8B': 'Llama-3.1-8B-Instruct-q4f32_1-MLC',
+// Groq専用
+const GROQ_NOTE = {
+  ja: 'Groq Console（console.groq.com）に無料登録してAPIキーを取得。完全無料・高速。クレジットカード不要。',
+  en: 'Register for free at Groq Console (console.groq.com). Completely free and fast. No credit card required.',
+  zh: '在 Groq Console（console.groq.com）免费注册获取 API 密钥。完全免费且快速。无需信用卡。',
+  ko: 'Groq Console(console.groq.com)에서 무료 가입 후 API 키 발급. 완전 무료・고속. 신용카드 불필요.',
+  fr: 'Inscrivez-vous gratuitement sur Groq Console (console.groq.com). Entièrement gratuit et rapide. Sans carte bancaire.',
 };
 
-function selectModel(size) {
-  if (modelLoaded) return; // ロード済みなら切り替え不可
-  selectedModel = size;
-  document.getElementById('modelBtn1B').classList.toggle('active', size === '1B');
-  document.getElementById('modelBtn8B').classList.toggle('active', size === '8B');
-}
-
-async function downloadModel() {
-  const webllm = window.webllm;
-  if (!webllm) {
-    setModelStatus('❌ WebLLMの読み込みに失敗しました。ページを再読み込みしてください。');
-    return;
-  }
-
-  const dlBtn = document.getElementById('downloadBtn');
-  dlBtn.disabled = true;
-  dlBtn.textContent = '⏳ ダウンロード中...';
-  document.getElementById('progressWrap').style.display = 'block';
-
-  try {
-    engine = await webllm.CreateMLCEngine(MODELS[selectedModel], {
-      initProgressCallback: (progress) => {
-        const pct = Math.round((progress.progress || 0) * 100);
-        document.getElementById('progressBar').style.width = pct + '%';
-        document.getElementById('progressText').textContent = progress.text || `${pct}%`;
-        setModelStatus(`📥 ${progress.text || 'ダウンロード中...'}`);
-      }
-    });
-    modelLoaded = true;
-    document.getElementById('progressWrap').style.display = 'none';
-    setModelStatus(`✅ ${selectedModel === '1B' ? 'Llama-3.2-1B' : 'Llama-3.1-8B'} 読み込み完了！占いを開始できます。`);
-    dlBtn.textContent = '✅ 準備完了';
-    dlBtn.style.borderColor = 'rgba(201,168,76,0.5)';
-    dlBtn.style.color = 'var(--gold)';
-  } catch(e) {
-    dlBtn.disabled = false;
-    dlBtn.textContent = '⬇ 再試行';
-    document.getElementById('progressWrap').style.display = 'none';
-    setModelStatus('❌ エラー: ' + (e.message || e));
-    console.error(e);
-  }
-}
-
-function setModelStatus(msg) {
-  const el = document.getElementById('modelStatus');
-  if (el) el.textContent = msg;
-}
-
-// iPhoneチェック
-function isIOS() {
-  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-}
-
-function checkDevice() {
-  if (isIOS()) {
-    const ok = confirm('iPhoneはローカルAIに非対応です。\nGroqキー版に切り替えますか？\n（console.groq.comで無料取得できます）');
-    if (ok) {
-      useGroqFallback = true;
-      document.getElementById('modelStatusWrap').style.display = 'none';
-      document.getElementById('modelBtn1B').style.display = 'none';
-      document.getElementById('modelBtn8B').style.display = 'none';
-      document.querySelector('[style*="ローカルAIモデル"]') && (document.querySelector('label[style*="ローカルAI"]').textContent = '⚡ Groq APIキー（iPhone用）');
-      document.getElementById('groqFallback').style.display = 'block';
-      loadApiKeys();
-    }
-  }
+function updateProviderUI() {
+  const note = GROQ_NOTE[currentLang] || GROQ_NOTE.ja;
+  const noteEl = document.getElementById('apikeyNote');
+  if (noteEl) noteEl.textContent = note;
 }
 
 function saveApiKeys() {
-  const el = document.getElementById('apiKey');
-  if (el) try { localStorage.setItem('mikagami_apikeys', JSON.stringify({ groq: el.value })); } catch(e) {}
+  try { localStorage.setItem('mikagami_apikeys', JSON.stringify({ groq: document.getElementById('apiKey').value })); } catch(e) {}
 }
 
 function loadApiKeys() {
@@ -548,12 +450,9 @@ function loadApiKeys() {
     const raw = localStorage.getItem('mikagami_apikeys');
     if (!raw) return;
     const data = JSON.parse(raw);
-    const el = document.getElementById('apiKey');
-    if (data.groq && el) el.value = data.groq;
+    if (data.groq) document.getElementById('apiKey').value = data.groq;
   } catch(e) {}
 }
-
-function updateProviderUI() {}
 
 // ══════════════════════════════════════════
 // Type selector
@@ -666,6 +565,7 @@ function getSeimei(lastName, firstName) {
 async function invokeFortune() {
   try {
   const t = I18N[currentLang];
+  const apiKey = document.getElementById('apiKey').value.trim();
   const lastName = document.getElementById('lastName').value.trim();
   const firstName = document.getElementById('firstName').value.trim();
   const name = lastName + ' ' + firstName;
@@ -677,22 +577,11 @@ async function invokeFortune() {
   const errEl = document.getElementById('errorMsg');
   errEl.className = 'error-msg';
 
+  if (!apiKey) { showError(t.errApiKey); return; }
   if (!lastName && !firstName) { showError(t.errName); return; }
   if (!bd) { showError(t.errBirth); return; }
 
-  // WebLLMモード：ロード済みチェック
-  if (!useGroqFallback && !modelLoaded) {
-    showError('AIモデルをダウンロードしてから占いを開始してください。');
-    return;
-  }
-
-  // Groqフォールバックモード：APIキーチェック
-  if (useGroqFallback) {
-    const apiKey = document.getElementById('apiKey')?.value.trim();
-    if (!apiKey) { showError(t.errApiKey); return; }
-  }
-
-  try { saveFormData(); if (useGroqFallback) saveApiKeys(); } catch(e) { console.warn('save error:', e); }
+  try { saveFormData(); saveApiKeys(); } catch(e) { console.warn('save error:', e); }
 
   let seimei = null;
   try { seimei = getSeimei(lastName, firstName); } catch(e) { console.warn('getSeimei error:', e); }
@@ -711,19 +600,6 @@ async function invokeFortune() {
   try {
     let text = '';
 
-    if (!useGroqFallback) {
-      // ── WebLLMモード ──
-      const reply = await engine.chat.completions.create({
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 1200,
-        temperature: 0.85,
-      });
-      text = reply.choices?.[0]?.message?.content || '';
-      if (!text) throw new Error('EMPTY_RESPONSE');
-
-    } else {
-      // ── Groqフォールバックモード ──
-      const apiKey = document.getElementById('apiKey').value.trim();
       const GROQ_MODELS = [
         'llama-3.3-70b-versatile',
         'llama3-70b-8192',
@@ -738,7 +614,10 @@ async function invokeFortune() {
         try {
           const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method:'POST',
-            headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+apiKey },
+            headers:{
+              'Content-Type':'application/json',
+              'Authorization':'Bearer '+apiKey,
+            },
             body: JSON.stringify({ model, max_tokens:1200, temperature:0.85, messages:[{role:'user',content:prompt}] })
           });
           const data = await res.json();
@@ -758,7 +637,6 @@ async function invokeFortune() {
         if (statusEl) statusEl.textContent = `⚠ 全モデル失敗: ${groqLastErr}`;
         throw new Error('GROQ_FAILED:' + groqLastErr);
       }
-    }
 
     document.getElementById('loadingVeil').className = 'loading-veil';
     document.getElementById('resultTypeIndicator').textContent = t.typeLabels[type];
@@ -1094,10 +972,7 @@ function loadFormData() {
 
 setLang('ja');
 loadFormData();
-// iPhoneチェック（DOMロード後に実行）
-window.addEventListener('load', () => {
-  checkDevice();
-});
+loadApiKeys();
 
 // イベントリスナー（onclickより確実）
 document.addEventListener('DOMContentLoaded', function() {
