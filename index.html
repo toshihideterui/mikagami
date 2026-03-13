@@ -48,10 +48,13 @@
   .lang-bar::-webkit-scrollbar { display: none; }
   .lang-btn {
     display: flex; align-items: center; gap: 5px;
-    padding: 5px 10px; background: transparent;
+    padding: 10px 12px; background: transparent;
     border: 1px solid transparent; border-radius: 2px;
     color: var(--text-dim); font-family: inherit; font-size: 0.68rem;
     letter-spacing: 0.04em; cursor: pointer; transition: all 0.25s; white-space: nowrap;
+    -webkit-tap-highlight-color: rgba(201,168,76,0.2);
+    touch-action: manipulation;
+    min-height: 44px;
   }
   .lang-btn .flag { font-size: 0.95rem; line-height: 1; }
   .lang-btn:hover { color: var(--text); border-color: rgba(201,168,76,0.2); }
@@ -971,6 +974,14 @@ function loadFormData() {
 })();
 
 setLang('ja');
+
+// タッチデバイス向け言語ボタンのイベント改善
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    setLang(this.dataset.lang);
+  }, { passive: false });
+});
 loadFormData();
 loadApiKeys();
 
