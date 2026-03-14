@@ -444,13 +444,38 @@ function updateProviderUI() {
   if (noteEl) noteEl.textContent = note;
 }
 
+// ストレージ：localStorage → Cookie フォールバック
+function storageSave(key, value) {
+  try { localStorage.setItem(key, value); } catch(e) {}
+  try {
+    const expires = new Date();
+    expires.setFullYear(expires.getFullYear() + 1);
+    document.cookie = encodeURIComponent(key) + '=' + encodeURIComponent(value) + '; expires=' + expires.toUTCString() + '; path=/; SameSite=Lax';
+  } catch(e) {}
+}
+function storageLoad(key) {
+  try {
+    const v = localStorage.getItem(key);
+    if (v !== null) return v;
+  } catch(e) {}
+  try {
+    const name = encodeURIComponent(key) + '=';
+    const parts = document.cookie.split(';');
+    for (let p of parts) {
+      p = p.trim();
+      if (p.startsWith(name)) return decodeURIComponent(p.substring(name.length));
+    }
+  } catch(e) {}
+  return null;
+}
+
 function saveApiKeys() {
-  try { localStorage.setItem('mikagami_apikeys', JSON.stringify({ groq: document.getElementById('apiKey').value })); } catch(e) {}
+  try { storageSave('mikagami_apikeys', JSON.stringify({ groq: document.getElementById('apiKey').value })); } catch(e) {}
 }
 
 function loadApiKeys() {
   try {
-    const raw = localStorage.getItem('mikagami_apikeys');
+    const raw = storageLoad('mikagami_apikeys');
     if (!raw) return;
     const data = JSON.parse(raw);
     if (data.groq) document.getElementById('apiKey').value = data.groq;
@@ -704,12 +729,12 @@ function saveFormData() {
     question: document.getElementById('question').value,
     lang: currentLang
   };
-  try { localStorage.setItem('mikagami_form', JSON.stringify(data)); } catch(e) {}
+  try { storageSave('mikagami_form', JSON.stringify(data)); } catch(e) {}
 }
 
 function loadFormData() {
   try {
-    const saved = localStorage.getItem('mikagami_form');
+    const saved = storageLoad('mikagami_form');
     if (!saved) return;
     const data = JSON.parse(saved);
     if (data.apiKey) document.getElementById('apiKey').value = data.apiKey;
